@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
-class CoreConfig(AppConfig):
+class AnagraficaConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'apps.core'
-    label = 'core'
+    name = 'apps.anagrafica'
+    label = 'anagrafica'

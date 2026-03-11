@@ -1,0 +1,180 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    .preview-section {
+        background: white;
+        padding: 20px;
+        margin-bottom: 30px;
+        border-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .preview-header {
+        border-bottom: 2px solid #264b5d;
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+        color: #264b5d;
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+    .data-table th {
+        background-color: #f5f5f5;
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .data-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        font-size: 13px;
+    }
+
+    .data-table tr:nth-child(even) {
+        background-color: #fafafa;
+    }
+
+    .data-table tr:hover {
+        background-color: #f0f8ff;
+    }
+
+    .btn-action {
+        background-color: #417690;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 4px;
+        text-decoration: none;
+        display: inline-block;
+        margin-top: 20px;
+    }
+
+    .btn-action:hover {
+        background-color: #205067;
+    }
+
+    .badge-info {
+        background: #e8f4f8;
+        color: #0c5460;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        margin-bottom: 10px;
+        display: inline-block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="padding: 20px;">
+    <h1>Anteprima Sincronizzazione Dati #{{ caricamento.id }}</h1>
+    <p>Data Caricamento: <strong>{{ caricamento.data_operazione|date:"d/m/Y H:i" }}</strong></p>
+
+    <div style="margin-bottom: 20px;">
+        <a href="{% url 'admin:anagrafica_caricamentodati_changelist' %}" class="btn-action">← Torna alla lista
+            caricamenti</a>
+    </div>
+
+    {% if anteprima_anagrafica %}
+    <div class="preview-section">
+        <div class="preview-header">📄 File Anagrafica</div>
+        {% if anteprima_anagrafica.error %}
+        <p style="color: red;">Errore lettura file: {{ anteprima_anagrafica.error }}</p>
+        {% else %}
+        <div class="badge-info">Prime 5 righe del file Excel</div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    {% for header in anteprima_anagrafica.headers %}
+                    <th>{{ header }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in anteprima_anagrafica.rows %}
+                <tr>
+                    {% for cell in row %}
+                    <td>{{ cell }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if anteprima_presenze %}
+    <div class="preview-section">
+        <div class="preview-header">🗂️ Archivio Presenze (ZIP Massivo)</div>
+        {% if anteprima_presenze.error %}
+        <p style="color: red;">{{ anteprima_presenze.error }}</p>
+        {% else %}
+        <div class="badge-info">File CSV trovati all'interno dell'archivio (Primi 10)</div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    {% for header in anteprima_presenze.headers %}
+                    <th>{{ header }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in anteprima_presenze.rows %}
+                <tr>
+                    {% for cell in row %}
+                    <td>{{ cell }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <p style="margin-top:10px; font-style:italic; color:#666;">
+            Nota: I file verranno elaborati singolarmente per estrarre le ore lavorate.
+        </p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if anteprima_retribuzioni %}
+    <div class="preview-section">
+        <div class="preview-header">💰 File Retribuzioni (18 Elementi)</div>
+        <table class="data-table">
+            <thead>
+                <tr>{% for h in anteprima_retribuzioni.headers %}<th>{{ h }}</th>{% endfor %}</tr>
+            </thead>
+            <tbody>
+                {% for row in anteprima_retribuzioni.rows %}
+                <tr>{% for c in row %}<td>{{ c }}</td>{% endfor %}</tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    {% if anteprima_stacos or anteprima_ratei %}
+    <div class="preview-section">
+        <div class="preview-header">📊 Altri File (Costi / Ratei)</div>
+        <p>I file secondari (STACOS / RATEI) sono pronti per l'importazione.</p>
+    </div>
+    {% endif %}
+
+    {% if not anteprima_anagrafica and not anteprima_presenze and not anteprima_retribuzioni %}
+    <div class="preview-section">
+        <p style="color: orange;">⚠️ Nessun file caricato o anteprima non disponibile.</p>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

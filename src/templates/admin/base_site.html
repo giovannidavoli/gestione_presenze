@@ -1,0 +1,33 @@
+{% extends "admin/base_site.html" %}
+
+{% block nav-global %}
+{{ block.super }}
+<div style="float: left; margin-left: 20px; margin-top: 10px;">
+    <a href="{% url 'dashboard_generale' %}"
+        style="background-color: #28a745; color: white; padding: 5px 15px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 13px;">
+        📊 VAI ALLA DASHBOARD STUDIO
+    </a>
+</div>
+{% endblock %}
+
+{% block sidebar %}
+<div id="content-related" style="margin-bottom: 20px;">
+    <div class="module">
+        <h2 style="background: #2c3e50;">Azioni Rapide</h2>
+        <ul style="padding: 10px; list-style: none;">
+            <li style="margin-bottom: 10px;">
+                <a href="{% url 'dashboard_generale' %}"
+                    style="color: #2c3e50; font-weight: bold; text-decoration: none;">
+                    📈 Analisi KPI Globali
+                </a>
+            </li>
+            <li>
+                <a href="/admin/anagrafica/azienda/" style="color: #2c3e50; font-weight: bold; text-decoration: none;">
+                    🏢 Analisi Costi per Ditta
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+{{ block.super }}
+{% endblock %}

@@ -1,0 +1,111 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    .bi-container { padding: 30px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f9; min-height: 100vh; }
+    
+    /* Titolo */
+    .bi-header { margin-bottom: 30px; border-bottom: 2px solid #dfe6e9; padding-bottom: 15px; }
+    .bi-header h1 { color: #2c3e50; font-size: 28px; font-weight: 700; margin: 0; }
+    .bi-header p { color: #7f8c8d; font-size: 16px; margin-top: 5px; }
+
+    /* KPI Cards */
+    .bi-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
+    .bi-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: relative; overflow: hidden; }
+    .bi-card::before { content: ''; position: absolute; top: 0; left: 0; width: 6px; height: 100%; }
+    .bi-card.blue::before { background: #3498db; }
+    .bi-card.orange::before { background: #e67e22; }
+    .bi-card.green::before { background: #2ecc71; }
+    
+    .bi-card-title { font-size: 14px; text-transform: uppercase; color: #95a5a6; font-weight: 600; letter-spacing: 1px; }
+    .bi-card-value { font-size: 32px; font-weight: bold; color: #2c3e50; margin-top: 10px; }
+    .bi-card-sub { font-size: 13px; color: #bdc3c7; margin-top: 5px; }
+
+    /* Tabella */
+    .bi-table-box { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; }
+    .bi-table-header { padding: 20px; background: #fff; border-bottom: 1px solid #ecf0f1; display: flex; justify-content: space-between; align-items: center; }
+    .bi-table-title { font-size: 18px; font-weight: bold; color: #34495e; }
+    
+    table.bi-data-table { width: 100%; border-collapse: collapse; }
+    table.bi-data-table th { background: #f8f9fa; color: #7f8c8d; font-weight: 600; text-transform: uppercase; font-size: 12px; padding: 15px; text-align: left; border-bottom: 2px solid #ecf0f1; }
+    table.bi-data-table td { padding: 15px; border-bottom: 1px solid #ecf0f1; color: #2c3e50; font-size: 14px; }
+    table.bi-data-table tr:hover { background: #f1f2f6; }
+    
+    .num-col { text-align: right !important; font-family: 'Consolas', monospace; font-weight: 600; }
+    .badge-company { background: #e8f6f3; color: #16a085; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bi-container">
+    
+    <div class="bi-header">
+        <h1>Business Intelligence Studio 3</h1>
+        <p>Analisi costi reali calcolati su componenti LUL e STACOS (Aggiornato: {{ ultimo_aggiornamento|date:"H:i" }})</p>
+    </div>
+
+    <div class="bi-cards">
+        <div class="bi-card orange">
+            <div class="bi-card-title">Debito Totale Residui Orari</div>
+            <div class="bi-card-value">€ {{ debito_ratei_totale|floatformat:2 }}</div>
+            <div class="bi-card-sub">Ferie, ROL ed Ex-Festività accumulate</div>
+        </div>
+        <div class="bi-card blue">
+            <div class="bi-card-title">Budget Totale Uscita Mensile</div>
+            <div class="bi-card-value">€ {{ costo_totale_mensile|floatformat:2 }}</div>
+            <div class="bi-card-sub">Costo Aziendale + Accantonamenti Mensili</div>
+        </div>
+        <div class="bi-card green">
+            <div class="bi-card-title">Dipendenti Gestiti</div>
+            <div class="bi-card-value">{{ totale_dipendenti }}</div>
+            <div class="bi-card-sub">Su {{ totale_aziende }} Aziende attive</div>
+        </div>
+    </div>
+
+    <div class="bi-table-box">
+        <div class="bi-table-header">
+            <div class="bi-table-title">Analisi Analitica Lavoratori</div>
+        </div>
+        <table class="bi-data-table">
+            <thead>
+                <tr>
+                    <th>Dipendente</th>
+                    <th>Azienda</th>
+                    <th class="num-col">Ore/Sett (LUL)</th>
+                    <th class="num-col">Costo/h (BI)</th>
+                    <th class="num-col">Netto Stimato (BI)</th>
+                    <th class="num-col">Residuo (h)</th>
+                    <th class="num-col">Debito Residui (€)</th>
+                    <th class="num-col">Budget Mensile Tot.</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in dipendenti %}
+                <tr>
+                    <td>
+                        <strong>{{ row.obj.cognome_nome }}</strong><br>
+                        <span style="font-size:11px; color:#95a5a6;">{{ row.obj.qualifica|default:"-" }}</span>
+                    </td>
+                    <td><span class="badge-company">{{ row.azienda }}</span></td>
+                    <td class="num-col">{{ row.ore_sett_lul|floatformat:1 }}</td>
+                    <td class="num-col">€ {{ row.costo_ora|floatformat:2 }}</td>
+                    <td class="num-col" style="color:#27ae60;">€ {{ row.netto_stimato|floatformat:2 }}</td>
+                    <td class="num-col">{{ row.ore_residue|floatformat:1 }}</td>
+                    <td class="num-col" style="color:#e67e22;">€ {{ row.debito_residui|floatformat:2 }}</td>
+                    <td class="num-col" style="color:#2980b9;">€ {{ row.budget_mensile|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" style="text-align:center; padding: 40px; color:#bdc3c7;">
+                        Nessun dato disponibile. Assicurati di aver sincronizzato i file LUL e STACOS.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% endblock %}

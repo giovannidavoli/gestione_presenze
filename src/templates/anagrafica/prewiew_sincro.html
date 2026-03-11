@@ -1,0 +1,82 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+<style>
+    .table-preview { font-size: 0.85rem; }
+    .header-ditta { background-color: #f8f9fa; font-weight: bold; color: #0d6efd; }
+    .col-lordo { font-weight: bold; color: #198754; background-color: #f0fff4 !important; }
+    .col-ore { font-family: 'Courier New', monospace; font-weight: 600; text-align: center; }
+    .badge-pt { font-size: 0.75rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-microscope"></i> Strumento Anteprima Importazione</h2>
+        <div>
+            <a href="{% url 'admin:anagrafica_caricamentodati_changelist' %}" class="btn btn-secondary">Annulla</a>
+            <button class="btn btn-success ms-2" onclick="confirm('Vuoi procedere con il salvataggio definitivo nel database?')">
+                <i class="fas fa-check-circle"></i> Conferma e Salva nel Database
+            </button>
+        </div>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            Riepilogo Dati Unificati (Incrocio Anagrafica, Paga e Presenze)
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-hover table-bordered table-preview mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Azienda (Ditta)</th>
+                        <th>Matr.</th>
+                        <th>Nominativo</th>
+                        <th>Qualifica / Contratto</th>
+                        <th>PT %</th>
+                        <th>Lordo Mensile Calcolato</th>
+                        <th>Orario (L M M G V S D)</th>
+                        <th>INPS / INAIL</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in dati_unificati %}
+                    <tr>
+                        <td class="header-ditta">{{ d.ditta }} <small class="text-muted">(Cod. {{ d.cod_az }})</small></td>
+                        <td>{{ d.matr }}</td>
+                        <td><strong>{{ d.nome }}</strong></td>
+                        <td>
+                            <small>{{ d.qualifica }}</small><br>
+                            <span class="badge bg-info text-dark">{{ d.contratto }}</span>
+                        </td>
+                        <td>
+                            <span class="badge badge-pt {% if d.pt == 100 %}bg-primary{% else %}bg-warning text-dark{% endif %}">
+                                {{ d.pt }}%
+                            </span>
+                        </td>
+                        <td class="col-lordo text-end">€ {{ d.lordo }}</td>
+                        <td class="col-ore">
+                            {% for h in d.ore %}
+                                {{ h|floatformat:1 }}{% if not forloop.last %} | {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>
+                            <small>INPS: {{ d.inps }}</small><br>
+                            <small>INAIL: {{ d.inail }}</small>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center p-5">Nessun dato trovato. Verifica i file caricati.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

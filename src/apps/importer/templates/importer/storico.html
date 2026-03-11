@@ -1,0 +1,146 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+
+<style>
+    :root { 
+        --pro-blue: #264b5d; 
+        --white: #ffffff; 
+        --light-celeste: #e3f2fd; 
+        --border-blue: #bbdefb;
+        --ord-blue: #e1f5fe;
+        --lordo-green: #e8f5e9;
+    }
+    body { background-color: var(--white); font-family: 'Segoe UI', sans-serif; }
+    
+    .card-etl { 
+        background: var(--white); 
+        border-radius: 12px; 
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06); 
+        padding: 25px; 
+        margin-bottom: 30px; 
+        border-left: 10px solid var(--pro-blue); 
+    }
+    
+    .btn-action { 
+        background: var(--pro-blue); 
+        color: white; 
+        padding: 10px 20px; 
+        border: none; 
+        border-radius: 6px; 
+        font-weight: bold; 
+        cursor: pointer; 
+        transition: 0.3s;
+    }
+    .btn-action:hover { background: #1a3441; transform: translateY(-2px); }
+    
+    .btn-reset {
+        background: #6c757d; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; margin-left: 10px; font-size: 13px;
+    }
+    .btn-reset:hover { background: #5a6268; }
+
+    .filter-grid {
+        display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 15px; align-items: end; background: var(--light-celeste); padding: 20px; border-radius: 10px; margin-bottom: 20px;
+    }
+    
+    .filter-grid label { font-size: 11px; font-weight: bold; display: block; margin-bottom: 5px; color: var(--pro-blue); text-transform: uppercase;}
+    .filter-grid select, .filter-grid input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px; font-size: 12px; }
+
+    .table-storico { overflow: auto; max-height: 650px; border: 2px solid var(--pro-blue); border-radius: 8px; }
+    .table-storico table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .table-storico th { background: var(--pro-blue); color: white; padding: 12px; border: 1px solid #dee2e6; position: sticky; top: 0; white-space: nowrap; z-index: 10; }
+    .table-storico td { padding: 10px; border: 1px solid #eee; white-space: nowrap; }
+    .table-storico tr:hover { background-color: #f8f9fa; }
+    
+    .td-money { font-weight: bold; text-align: right; }
+    .td-netto { color: #2e7d32; font-weight: 900; background-color: var(--lordo-green); text-align: right;}
+</style>
+
+<div style="padding: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--pro-blue); padding-bottom: 10px; margin-bottom: 20px;">
+        <h1 style="color: var(--pro-blue); font-weight: 900; margin: 0;">
+            DASHBOARD STORICO <span style="font-weight: 300; font-size: 0.7em;">| Consultazione Database ETL</span>
+        </h1>
+        <a href="{% url 'importer_dashboard' %}" class="btn-action" style="text-decoration: none; font-size: 12px; background: #28a745;">+ NUOVA IMPORTAZIONE</a>
+    </div>
+
+    <div class="card-etl">
+        <form method="GET" action="">
+            <div class="filter-grid">
+                <div>
+                    <label>Data Sessione Importazione</label>
+                    <select name="sessione">
+                        <option value="">-- Tutte le sessioni --</option>
+                        {% for s in sessioni %}
+                            <option value="{{ s.id }}" {% if current_sessione == s.id|stringformat:"s" %}selected{% endif %}>
+                                {{ s.data_operazione|date:"d/m/Y H:i" }} - {{ s.nome_file_principale }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label>Azienda</label>
+                    <select name="azienda">
+                        <option value="">-- Tutte le aziende --</option>
+                        {% for az in aziende %}
+                            <option value="{{ az.codice }}" {% if current_azienda == az.codice %}selected{% endif %}>
+                                {{ az.codice }} - {{ az.ragione_sociale }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label>Ricerca Libera</label>
+                    <input type="text" name="ricerca" placeholder="Cerca Matricola o Nominativo..." value="{{ current_ricerca }}">
+                </div>
+                <div>
+                    <button type="submit" class="btn-action">FILTRA DATI</button>
+                    <a href="{% url 'importer_storico' %}" class="btn-reset">PULISCI</a>
+                </div>
+            </div>
+        </form>
+
+        <p style="font-size: 12px; font-weight: bold; color: #555;">Record trovati: {{ records|length }}</p>
+
+        {% if records %}
+        <div class="table-storico">
+            <table>
+                <thead>
+                    <tr>
+                        <th>DATA IMPORT</th>
+                        <th>AZIENDA</th>
+                        <th>MATRICOLA</th>
+                        <th>NOMINATIVO</th>
+                        <th>TIPO RETR.</th>
+                        <th>PT %</th>
+                        <th style="text-align: center;">H LAV.</th>
+                        <th style="text-align: right;">LORDO</th>
+                        <th style="text-align: right;">COSTO AZIENDA</th>
+                        <th style="text-align: right;">NETTO STIMATO</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in records %}
+                    <tr>
+                        <td>{{ r.sessione.data_operazione|date:"d/m/Y" }}</td>
+                        <td><b>{{ r.codice_azienda }}</b> - {{ r.ragione_sociale }}</td>
+                        <td>{{ r.matricola }}</td>
+                        <td><b>{{ r.nominativo }}</b></td>
+                        <td>{{ r.tipo_retribuzione|default:'-' }}</td>
+                        <td>{{ r.perc_part_time }}%</td>
+                        <td style="text-align: center;">{{ r.ore_ordinarie }} h</td>
+                        <td class="td-money">{{ r.lordo }} €</td>
+                        <td class="td-money" style="color: #c62828;">{{ r.costo_aziendale }} €</td>
+                        <td class="td-netto">{{ r.netto_stimato }} €</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div style="padding: 30px; text-align: center; color: #666; font-size: 14px; background: #f8f9fa; border-radius: 8px;">
+            Nessun record trovato con i filtri selezionati.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

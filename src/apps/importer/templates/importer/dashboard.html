@@ -1,0 +1,268 @@
+{% extends "admin/base_site.html" %}
+{% load importer_tags %}
+{% block content %}
+
+{% if messages %}
+    <div style="padding: 15px; margin-bottom: 20px; border-radius: 8px; font-weight: bold; background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;">
+        {% for message in messages %}
+            {{ message }}<br>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<style>
+    :root { 
+        --pro-blue: #264b5d; 
+        --white: #ffffff; 
+        --light-celeste: #e3f2fd; 
+        --border-blue: #bbdefb;
+        --danger-red: #721c24;
+        --bg-danger: #f8d7da;
+        /* Colori richiesti per la validazione calcolata */
+        --ord-blue: #e1f5fe;
+        --extra-orange: #fff3e0;
+        --lordo-green: #e8f5e9;
+    }
+    body { background-color: var(--white); font-family: 'Segoe UI', sans-serif; }
+    
+    .card-etl { 
+        background: var(--white); 
+        border-radius: 12px; 
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06); 
+        padding: 25px; 
+        margin-bottom: 30px; 
+        border-left: 10px solid var(--pro-blue); 
+    }
+    
+    .btn-action { 
+        background: var(--pro-blue); 
+        color: white; 
+        padding: 12px 30px; 
+        border: none; 
+        border-radius: 6px; 
+        font-weight: bold; 
+        cursor: pointer; 
+        transition: 0.3s;
+    }
+
+    .btn-action:hover { background: #1a3441; transform: translateY(-2px); }
+
+    .disclaimer-box {
+        background-color: var(--bg-danger);
+        color: var(--danger-red);
+        padding: 15px;
+        border: 1px solid #f5c6cb;
+        border-radius: 8px;
+        margin-bottom: 25px;
+        font-size: 13px;
+    }
+
+    /* GRIGLIA DI ISPEZIONE EXCEL (Senza muri di testo) */
+    .table-inspection { 
+        overflow: auto; 
+        max-height: 800px; 
+        border: 2px solid #ccc; 
+        margin-top: 15px; 
+        background: #fff;
+        position: relative;
+    }
+    
+    .table-inspection table { 
+        border-collapse: separate; 
+        border-spacing: 0; 
+        width: auto; 
+        min-width: 100%;
+    }
+    
+    .table-inspection th { 
+        background: #f1f1f1; 
+        color: #333; 
+        padding: 12px; 
+        border: 1px solid #ddd; 
+        font-size: 11px; 
+        position: sticky; 
+        top: 0; 
+        z-index: 5;
+        white-space: nowrap;
+    }
+    
+    .table-inspection td { 
+        padding: 10px; 
+        border: 1px solid #eee; 
+        white-space: nowrap; 
+        font-size: 11px; 
+        background: #fff;
+    }
+
+    /* TABELLA DI VALIDAZIONE FINALE INTEGRALE */
+    .table-validation { overflow: auto; max-height: 600px; border: 2px solid #28a745; border-radius: 8px; margin-top: 10px; }
+    .table-validation table { width: 100%; border-collapse: collapse; font-size: 10px; }
+    .table-validation th { background: var(--pro-blue); color: white; padding: 12px; border: 1px solid #dee2e6; position: sticky; top: 0; white-space: nowrap; z-index: 10; }
+    .table-validation td { padding: 8px; border: 1px solid #eee; white-space: nowrap; }
+    
+    /* Evidenziazioni calcoli massivi */
+    .td-ord { background-color: var(--ord-blue) !important; font-weight: bold; text-align: center; }
+    .td-extra { background-color: var(--extra-orange) !important; font-weight: bold; color: #e65100; text-align: center; }
+    .td-lordo { background-color: var(--lordo-green) !important; font-weight: bold; }
+</style>
+
+<div style="padding: 20px;">
+    <h1 style="color: var(--pro-blue); font-weight: 900; border-bottom: 3px solid var(--pro-blue); padding-bottom: 10px;">
+        MAPPER STUDIO ETL <span style="font-weight: 300; font-size: 0.7em;">| Configurazione Integrale GIS</span>
+    </h1>
+
+    <div class="disclaimer-box">
+        <strong>AVVISO DI STUDIO:</strong> I valori di <strong>Costo Aziendale</strong> e <strong>Netto Busta</strong> sono 
+        <strong>STIME PROFESSIONALI</strong> calcolate sulla base dell'articolazione oraria individuale (somma lavoro riga +2 e assenze riga +4). 
+        Il calcolo ufficiale del cedolino potrebbe variare in base a variabili fiscali non incluse nell'analisi massiva.
+    </div>
+
+    {% if anteprima_finale %}
+    <div style="background: #e8f5e9; border: 2px solid #28a745; padding: 15px; border-radius: 8px; margin-bottom: 25px;">
+        <h3 style="margin: 0; color: #28a745;">✅ ELABORAZIONE COMPLETATA: Visualizzazione integrale di tutti i record.</h3>
+    </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="card-etl">
+            <h3 style="color: var(--pro-blue); margin-top: 0;">1. Caricamento Flussi Dati GIS Ranocchi</h3>
+            <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; margin-bottom: 20px;">
+                {% for key in mapping_fields.keys %}
+                <div style="font-size: 11px;">
+                    <b style="text-transform: uppercase;">{{ key }}:</b><br>
+                    <input type="file" name="{{ key }}" style="margin-top:5px;">
+                </div>
+                {% endfor %}
+            </div>
+            <button type="submit" name="btn_ispeziona" class="btn-action">ISPEZIONA E CARICA GRIGLIE INTEGRALI</button>
+        </div>
+
+        {% if files_data %}
+            {% for key, info in files_data.items %}
+            <div class="card-etl">
+                <h4 style="color: var(--pro-blue); margin: 0; text-transform: uppercase;">File Ispezionato: {{ key }} ({{ info.name }})</h4>
+                
+                <div class="mapping-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; background: var(--light-celeste); padding: 20px; border-radius: 10px; margin: 15px 0;">
+                    {% for field in mapping_fields|dict_key:key %}
+                    <div>
+                        <label style="font-size: 10px; font-weight: bold; display: block; margin-bottom: 4px;">{{ field }}</label>
+                        <select name="map_{{ key }}_{{ field }}" style="width: 100%; font-size: 11px;">
+                            <option value="">-- Ignora --</option>
+                            {% for c in info.cols %}
+                            <option value="{{ c }}" {% if saved_mapping|dict_key:key|dict_key:field == c|slugify %}selected{% endif %}>Colonna {{ c }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="table-inspection">
+                    <table>
+                        <thead>
+                            <tr>{% for c in info.cols %}<th>Col {{ c }}</th>{% endfor %}</tr>
+                        </thead>
+                        <tbody>
+                            {% for row in info.preview %}
+                            <tr>{% for cell in row %}<td>{{ cell }}</td>{% endfor %}</tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endfor %}
+
+            <div class="card-etl" style="background: #f8f9fa; border-left-color: #007bff; text-align: center;">
+                <label><b>Ore Mensili Standard (Paracadute):</b></label>
+                <input type="number" name="ore_standard" value="{{ ore_standard|default:173 }}" style="padding: 8px; border: 2px solid var(--pro-blue); border-radius: 5px; width: 80px; text-align: center; font-weight: bold;">
+                <button type="submit" name="btn_verifica" class="btn-action" style="background: #007bff; margin-left: 20px;">GENERA TABELLA DI VALIDAZIONE CALCOLATA</button>
+            </div>
+        {% endif %}
+
+        {% if anteprima_finale %}
+        <div class="card-etl" style="border-left-color: #28a745;">
+            <h2 style="color: #28a745; margin-top: 0;">VALIDAZIONE CALCOLI INDIVIDUALI</h2>
+            <div class="table-validation">
+                <table>
+                    <thead>
+                        <tr>
+                            {% for cat, fields in mapping_fields.items %}
+                                {% for field in fields %}
+                                    {% with m_val=saved_mapping|dict_key:cat|dict_key:field %}
+                                        {% if m_val and m_val != "" %}<th>{{ field|upper }}</th>{% endif %}
+                                    {% endwith %}
+                                {% endfor %}
+                            {% endfor %}
+                            <th style="background: #1a3441;">H ORD (L+A)</th>
+                            <th style="background: #1a3441;">H EXTRA</th>
+                            <th style="background: #1a3441;">LORDO CALCOLATO</th>
+                            <th style="background: #1a3441;">NETTO (STIMA)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for chiave, d in anteprima_finale.items %}
+                        <tr>
+                            {% for cat, fields in mapping_fields.items %}
+                                {% for field in fields %}
+                                    {% with m_val=saved_mapping|dict_key:cat|dict_key:field %}
+                                        {% if m_val and m_val != "" %}
+                                            <td>
+                                                {% if field == 'Perc_PT' %}{{ d.Perc_PT }}%
+                                                {% elif field == 'Retribuzione_Fatto' %}{{ d.fatto }} €
+                                                
+                                                {% elif field == 'Tipo_Retribuzione' %}
+                                                    {{ d.Tipo_Retribuzione|default:'' }}
+                                                
+                                                {% elif field == 'TFR' %}
+                                                    {{ d.tfr|default:'0.00' }} €
+                                                    
+                                                {% elif field in 'Inps_Ditta,Inail_Ditta' %}
+                                                    {% with k=field|lower %}{{ d|dict_key:k|default:'0.00' }} €{% endwith %}
+                                                    
+                                                {% elif '_Res' in field or '_Mat' in field %}
+                                                    {% with k=field|lower %}{{ d|dict_key:k|default:'0.00' }}{% endwith %}
+                                                    
+                                                {% elif 'Elemento_' in field %}
+                                                    {% with el_k=field|lower %}{{ d|dict_key:el_k|default:'0.00' }} €{% endwith %}
+                                                    
+                                                {% elif field in 'Lun,Mar,Mer,Gio,Ven,Sab,Dom' %}
+                                                    {% with o_g=d.presenze_settimanali|dict_key:field %}{{ o_g|default:'0' }}{% endwith %}
+                                                    
+                                                {% else %}
+                                                    {{ d|dict_key:field|default:'' }}
+                                                {% endif %}
+                                            </td>
+                                        {% endif %}
+                                    {% endwith %}
+                                {% endfor %}
+                            {% endfor %}
+                            <td class="td-ord">{{ d.h_ord }} h</td>
+                            <td class="td-extra">{{ d.h_extra }} h</td>
+                            <td class="td-lordo">{{ d.lordo }} €</td>
+                            <td style="color: #2e7d32; font-weight: bold;">{{ d.netto }} €</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div style="margin-top: 30px; text-align: center;">
+                <input type="checkbox" name="salva_configurazione" id="id_salva_config" checked>
+                <label for="id_salva_config" style="font-weight: bold; color: var(--pro-blue); margin-bottom: 20px; display: inline-block;">Salva Mappatura Corrente</label>
+                
+                <div style="display: flex; gap: 20px; justify-content: center; align-items: center;">
+                    <button type="submit" name="btn_genera_xml" class="btn-action" style="background: #6c757d; width: 45%; font-size: 16px; padding: 15px;">
+                        ⬇️ SCARICA FILE XML
+                    </button>
+                    
+                    <button type="submit" name="btn_popola_db" class="btn-action" style="background: #28a745; width: 45%; font-size: 18px; padding: 15px; border: 2px solid #1e7e34;">
+                        🚀 POPOLA GESTIONALE PRESENZE
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </form>
+</div>
+{% endblock %}

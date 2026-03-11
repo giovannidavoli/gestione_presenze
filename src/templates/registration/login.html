@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Gestione Presenze</title>
+    {% load static %}
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #ecf0f1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .logo-img {
+            max-width: 250px;
+            margin-bottom: 10px;
+        }
+
+        .app-title {
+            color: #2c3e50;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            letter-spacing: 1px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: #7f8c8d;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 15px;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-login {
+            background-color: #0066b2;
+            /* Colore blu del logo Studio 3 */
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-login:hover {
+            background-color: #004d88;
+        }
+
+        .forgot-password {
+            margin-top: 25px;
+            font-size: 12px;
+            color: #7f8c8d;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+
+        .forgot-password a {
+            color: #0066b2;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .error-msg {
+            color: #e74c3c;
+            font-size: 13px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-card">
+        <img src="{% static 'img/logo_studio.jpg' %}" alt="Studio 3 SRL" class="logo-img">
+
+        <div class="app-title">GESTIONE PRESENZE v.1</div>
+
+        {% if form.errors %}
+        <div class="error-msg">Nome utente o password non validi. Riprova.</div>
+        {% endif %}
+
+        <form method="post" action="{% url 'login' %}">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="username">NOME UTENTE</label>
+                <input type="text" name="username" class="form-control" required autofocus>
+            </div>
+
+            <div class="form-group">
+                <label for="password">PASSWORD</label>
+                <input type="password" name="password" class="form-control" required>
+            </div>
+
+            <button type="submit" class="btn-login">ACCEDI AL GESTIONALE</button>
+        </form>
+
+        <div class="forgot-password">
+            Hai perso la password o hai problemi di accesso?<br>
+            Chiama lo Studio o scrivi a <br>
+            <a href="mailto:info@studio3lamezia.it">info@studio3lamezia.it</a>
+        </div>
+    </div>
+
+</body>
+
+</html>

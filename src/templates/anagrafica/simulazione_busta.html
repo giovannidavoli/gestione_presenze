@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Simulazione Cedolino - {{ dipendente.cognome_nome }}</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background: #525659;
+            padding: 20px;
+            margin: 0;
+        }
+
+        /* Foglio A4 Simulato */
+        .cedolino-box {
+            background: white;
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            padding: 15mm;
+            box-sizing: border-box;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        /* Intestazione */
+        .header {
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .company-info h1 {
+            margin: 0;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .periodo-info {
+            text-align: right;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        /* Box Dipendente */
+        .dipendente-box {
+            border: 1px solid #333;
+            padding: 10px;
+            margin-bottom: 20px;
+            font-size: 12px;
+        }
+
+        .row-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        /* Tabella Corpo */
+        table.cedolino-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 12px;
+        }
+
+        table.cedolino-table th {
+            text-align: left;
+            border-bottom: 1px solid #000;
+            padding: 5px;
+            text-transform: uppercase;
+            background: #eee;
+        }
+
+        table.cedolino-table td {
+            padding: 6px 5px;
+            border-bottom: 1px dashed #ccc;
+        }
+
+        .num {
+            text-align: right;
+            font-family: 'Consolas', monospace;
+            font-size: 13px;
+        }
+
+        /* Tabella Ratei */
+        .ratei-box {
+            margin-top: 20px;
+            border: 1px solid #999;
+            padding: 5px;
+        }
+        
+        .ratei-title {
+            font-size: 11px;
+            font-weight: bold;
+            background: #f0f0f0;
+            padding: 2px 5px;
+            margin-bottom: 5px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        table.ratei-table {
+            width: 100%;
+            font-size: 10px;
+            border-collapse: collapse;
+        }
+        
+        table.ratei-table th {
+            text-align: right;
+            border-bottom: 1px solid #ccc;
+            padding: 2px 5px;
+            background: white; /* Override grigio header */
+        }
+        table.ratei-table th:first-child { text-align: left; }
+        
+        table.ratei-table td {
+            text-align: right;
+            padding: 2px 5px;
+            border-bottom: 1px dotted #ddd;
+        }
+        table.ratei-table td:first-child { text-align: left; }
+
+
+        /* Box Netto */
+        .netto-wrapper {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 30px;
+        }
+
+        .netto-box {
+            border: 3px double #333;
+            padding: 15px 30px;
+            text-align: center;
+            background: #fdfefe;
+            transform: rotate(-1deg);
+        }
+
+        .netto-title {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #666;
+            letter-spacing: 2px;
+        }
+
+        .netto-val {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-top: 5px;
+        }
+
+        /* Footer Costo Azienda */
+        .footer-costo {
+            margin-top: 40px;
+            border-top: 1px dotted #999;
+            padding-top: 10px;
+            font-size: 11px;
+            color: #555;
+            text-align: right;
+        }
+
+        /* Bottone Stampa (non si vede in stampa) */
+        .no-print {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .btn-print {
+            background: #e74c3c;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-print:hover {
+            background: #c0392b;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .cedolino-box {
+                box-shadow: none;
+                margin: 0;
+                width: 100%;
+                height: auto;
+            }
+
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="no-print">
+        <button class="btn-print" onclick="window.print()">🖨️ STAMPA / SALVA PDF</button>
+        <button class="btn-print" style="background:#3498db; margin-left:10px;" onclick="window.close()">CHIUDI</button>
+    </div>
+
+    <div class="cedolino-box">
+        <div class="header">
+            <div class="company-info">
+                <small style="color:#666;">DATORE DI LAVORO</small><br>
+                <h1>{{ dipendente.azienda.ragione_sociale }}</h1>
+                <small>P.IVA: {{ dipendente.azienda.piva|default:"-" }}</small>
+            </div>
+            <div class="periodo-info">
+                CEDOLINO PAGA<br>
+                MESE: {{ periodo.mese }} / {{ periodo.anno }}
+            </div>
+        </div>
+
+        <div style="background-color: #fdf2e9; border-left: 4px solid #e67e22; padding: 10px; margin-bottom: 20px; font-family: sans-serif; font-size: 10px; color: #d35400; line-height: 1.4;">
+            <strong>⚠️ AVVERTENZA - DOCUMENTO AD USO INTERNO:</strong> Il presente prospetto è una simulazione di massima a puro scopo previsionale e di controllo di gestione. I valori indicati sono stime basate su parametri standard e non hanno validità contabile, fiscale o legale. Per l'esatta quadratura dei costi e delle buste paga, è strettamente necessario attendere i prospetti ufficiali elaborati dal Consulente del Lavoro.<br><br>
+            <em>Prodotto e scritto da <strong>Giovanni Davoli</strong> per <strong>Studio3 Srl</strong> di Lamezia Terme con il supporto di Gemini AI.</em>
+        </div>
+    
+        <div class="dipendente-box">
+            <div class="row-info">
+                <span><strong>DIPENDENTE:</strong> {{ dipendente.cognome_nome }}</span>
+                <span><strong>MATRICOLA:</strong> {{ dipendente.codice }}</span>
+            </div>
+            <div class="row-info">
+                <span><strong>QUALIFICA:</strong> {{ dipendente.qualifica|default:"Impiegato" }}</span>
+                <span><strong>LIVELLO:</strong> {{ dipendente.livello|default:"-" }}</span>
+            </div>
+            <div class="row-info">
+                <span><strong>DATA ASSUNZIONE:</strong> {{ dipendente.data_assunzione|date:"d/m/Y" }}</span>
+                <span><strong>SEDE:</strong> Sede Principale</span>
+            </div>
+            <div style="border-top:1px dashed #666; margin-top:5px; padding-top:5px;" class="row-info">
+                <span><strong>ORARIO:</strong> {{ dati.ore_settimanali|floatformat:0 }} ore/sett.</span>
+                <span><strong>PERC. PART-TIME:</strong> {{ dati.perc_part_time }}%</span>
+            </div>
+        </div>
+
+        <table class="cedolino-table">
+            <thead>
+                <tr>
+                    <th style="width: 40%;">DESCRIZIONE VOCE</th>
+                    <th class="num">ORE/GG</th>
+                    <th class="num">COMPETENZE (€)</th>
+                    <th class="num">TRATTENUTE (€)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>RETRIBUZIONE MENSILE (Base + Contingenza)</td>
+                    <td class="num">26,00</td>
+                    <td class="num">{{ dati.lordo_totale|floatformat:2 }}</td> 
+                    <td class="num"></td>
+                </tr>
+
+                {% if dati.ore_lavorate > 0 %}
+                <tr>
+                    <td>ORE ORDINARIE LAVORATE</td>
+                    <td class="num">{{ dati.ore_lavorate|floatformat:2 }}</td>
+                    <td class="num">incluso</td>
+                    <td class="num"></td>
+                </tr>
+                {% endif %}
+
+                {% if dati.ore_assenza > 0 %}
+                <tr>
+                    <td>ASSENZE RETRIBUITE (Ferie/Permessi)</td>
+                    <td class="num">{{ dati.ore_assenza|floatformat:2 }}</td>
+                    <td class="num">incluso</td>
+                    <td class="num"></td>
+                </tr>
+                {% endif %}
+                
+                {% if dati.ore_notturne > 0 %}
+                <tr>
+                    <td>MAGGIORAZIONE NOTTURNA (20%)</td>
+                    <td class="num">{{ dati.ore_notturne|floatformat:2 }}</td>
+                    <td class="num">{{ dati.valore_notturno|floatformat:2 }}</td>
+                    <td class="num"></td>
+                </tr>
+                {% endif %}
+
+                {% if dati.ore_straordinarie > 0 %}
+                <tr>
+                    <td>LAVORO STRAORDINARIO (30%)</td>
+                    <td class="num">{{ dati.ore_straordinarie|floatformat:2 }}</td>
+                    <td class="num">{{ dati.valore_straord|floatformat:2 }}</td>
+                    <td class="num"></td>
+                </tr>
+                {% endif %}
+
+
+                <tr style="background-color: #f9f9f9; font-weight:bold; border-top: 2px solid #000;">
+                    <td>TOTALE LORDO IMPONIBILE</td>
+                    <td class="num"></td>
+                    <td class="num">{{ dati.lordo_totale|floatformat:2 }}</td>
+                    <td class="num"></td>
+                </tr>
+
+                <tr>
+                    <td>CONTRIBUTI SOCIALI (IVS 9,19%)</td>
+                    <td class="num">9,19 %</td>
+                    <td class="num"></td>
+                    <td class="num">{{ dati.inps_dip|floatformat:2 }}</td>
+                </tr>
+
+                <tr>
+                    <td>IRPEF NETTA (Lorda - Detrazioni)</td>
+                    <td class="num"></td>
+                    <td class="num"></td>
+                    <td class="num">{{ dati.irpef_netta|floatformat:2 }}</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="ratei-box">
+            <div class="ratei-title">PROSPETTO FERIE E PERMESSI</div>
+            <table class="ratei-table">
+                <thead>
+                    <tr>
+                        <th>DESCRIZIONE</th>
+                        <th>RESIDUO A.P.</th>
+                        <th>MATURATO</th>
+                        <th>GODUTO</th>
+                        <th>SALDO</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>FERIE (Giorni)</strong></td>
+                        <td>{{ dati.ratei.ferie.prec|floatformat:2 }}</td>
+                        <td>{{ dati.ratei.ferie.mat|floatformat:2 }}</td>
+                        <td>{{ dati.ratei.ferie.god|floatformat:2 }}</td>
+                        <td><strong>{{ dati.ratei.ferie.saldo|floatformat:2 }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>PERMESSI ROL (Ore)</strong></td>
+                        <td>{{ dati.ratei.rol.prec|floatformat:2 }}</td>
+                        <td>{{ dati.ratei.rol.mat|floatformat:2 }}</td>
+                        <td>{{ dati.ratei.rol.god|floatformat:2 }}</td>
+                        <td><strong>{{ dati.ratei.rol.saldo|floatformat:2 }}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="netto-wrapper">
+            <div class="netto-box">
+                <div class="netto-title">NETTO DA PAGARE</div>
+                <div class="netto-val">€ {{ dati.netto|floatformat:2 }}</div>
+            </div>
+        </div>
+
+        <div class="footer-costo">
+            --- SEZIONE STATISTICA AZIENDALE ---<br>
+            <strong>COSTO TOTALE AZIENDA: € {{ dati.costo_azienda|floatformat:2 }}</strong><br>
+            <span style="font-size:9px;">(Include Retribuzione Lorda + INPS Azienda + INAIL + Rateo TFR)</span>
+        </div>
+    </div>
+
+</body>
+
+</html>

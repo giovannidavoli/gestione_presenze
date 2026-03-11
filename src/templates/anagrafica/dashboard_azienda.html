@@ -1,0 +1,448 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    .dashboard-container { padding: 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f9; min-height: 100vh; }
+    
+    /* Header Fisso */
+    .sticky-header { 
+        position: sticky; top: 0; background: white; z-index: 2000; 
+        padding: 15px 20px; border-bottom: 2px solid #bdc3c7; 
+        display: flex; justify-content: space-between; align-items: center; 
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-radius: 8px; margin-bottom: 20px;
+    }
+    
+    .company-title h2 { margin: 0; font-size: 22px; color: #2c3e50; font-weight: 700; }
+    .company-title h2 a { text-decoration: none; color: #2c3e50; border-bottom: 2px solid transparent; transition: border 0.3s; }
+    .company-title h2 a:hover { border-bottom: 2px solid #3498db; color: #3498db; }
+    .company-title span { color: #7f8c8d; font-size: 14px; }
+    
+    .month-nav { display: flex; align-items: center; gap: 15px; font-size: 18px; font-weight: bold; color: #34495e; }
+    .month-nav a { text-decoration: none; color: #34495e; padding: 5px 10px; border-radius: 4px; transition: background 0.2s; }
+    .month-nav a:hover { background: #ecf0f1; }
+
+    /* Pulsanti Azione */
+    .btn-action { background: #27ae60; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; border: none; cursor: pointer; transition: 0.2s; }
+    .btn-action:hover { background: #219150; transform: translateY(-1px); }
+    .btn-range { background: #3498db; }
+    .btn-range:hover { background: #2980b9; }
+    .btn-refresh { background: #f39c12; }
+    .btn-refresh:hover { background: #d35400; }
+
+    /* GRIGLIA DATI */
+    .grid-wrapper { overflow: auto; max-height: 75vh; background: white; border: 1px solid #dcdcdc; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    table.multi-row-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; }
+
+    /* Intestazioni */
+    th { position: sticky; top: 0; background: #34495e; color: white; padding: 8px 4px; min-width: 45px; text-align: center; border: 1px solid #5d6d7e; z-index: 1000; font-weight: 600; }
+    th.sunday { background: #c0392b; }
+
+    /* COLONNA NOMI (CRUSCOTTO SINISTRO) */
+    td.col-name { 
+        position: sticky; left: 0; z-index: 100; background: #fff; 
+        border-right: 3px solid #95a5a6; border-bottom: 2px solid #2c3e50;
+        vertical-align: top; padding: 10px; width: 260px; box-shadow: 4px 0 5px rgba(0,0,0,0.05);
+    }
+    .dip-name { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+    .dip-name a { text-decoration: none; color: #2980b9; }
+    .dip-name a:hover { text-decoration: underline; color: #1a5276; }
+    .dip-role { font-size: 11px; color: #7f8c8d; margin-bottom: 10px; display: block; }
+    
+    /* Box Statistiche */
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 8px; }
+    .stat-box { padding: 5px; border-radius: 4px; text-align: center; font-size: 10px; font-weight: bold; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    
+    .stat-lav { background: #3498db; }  
+    .stat-ass { background: #f39c12; }  
+    .stat-not { background: #95a5a6; }  
+    .stat-res-fer { background: #8e44ad; } 
+    .stat-res-rol { background: #c0392b; } 
+    
+    /* Box Costo Cliccabile */
+    .stat-cost { grid-column: span 2; font-size: 11px; padding: 0; }
+    .stat-cost a { display: block; padding: 6px; background: #27ae60; color: white; text-decoration: none; border-radius: 4px; transition: background 0.2s; }
+    .stat-cost a:hover { background: #219150; }
+
+    /* ETICHETTE RIGHE */
+    .row-label { 
+        font-size: 10px; font-weight: bold; text-align: right; padding-right: 8px; 
+        background: #fdfefe; border-right: 1px solid #eee; width: 80px; white-space: nowrap; 
+        position: sticky; left: 260px; z-index: 90; color: #7f8c8d; vertical-align: middle;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    /* CELLE INPUT */
+    td.cell-input { padding: 0; border-right: 1px solid #ecf0f1; border-bottom: 1px solid #ecf0f1; height: 28px; min-width: 45px; position: relative; }
+    
+    /* Colonna Rossa Festiva */
+    td.is-festivo { background-color: #fdedec; } 
+    td.is-festivo input { color: #c0392b; }
+
+    input.grid-input { 
+        width: 100%; height: 100%; border: none; text-align: center; 
+        font-family: 'Consolas', monospace; font-size: 13px; background: transparent; padding: 0; margin: 0;
+        transition: background 0.2s;
+    }
+    input.grid-input:focus { background: #d6eaf8; outline: 2px solid #3498db; z-index: 10; font-weight: bold; }
+    input.grid-input::placeholder { color: #dcdcdc; font-weight: normal; }
+
+    /* Stili Righe Specifiche */
+    tr.row-lav input { color: #2c3e50; font-weight: bold; }
+    tr.row-not { background-color: #f4f6f7; }
+    tr.row-ass1-cod { background-color: #fff9c4; border-top: 1px solid #ddd; } 
+    tr.row-ass1-ore { background-color: #ffccbc; }
+    tr.row-ass2-cod { background-color: #fff9c4; border-top: 1px dashed #ccc; } 
+    tr.row-ass2-ore { background-color: #ffccbc; border-bottom: 2px solid #2c3e50; }
+
+    /* MODALI */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 3000; justify-content: center; align-items: center; }
+    .modal-box { background: white; padding: 25px; border-radius: 8px; width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+    .modal-title { margin-top: 0; color: #2c3e50; font-size: 18px; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #7f8c8d; }
+    .form-control { width: 100%; padding: 8px; border: 1px solid #bdc3c7; border-radius: 4px; box-sizing: border-box; }
+    .btn-submit { width: 100%; padding: 10px; background: #3498db; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+    .btn-submit:hover { background: #2980b9; }
+    .close-modal { float: right; cursor: pointer; font-size: 20px; color: #aaa; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+
+    <datalist id="list-causali">
+        {% for c in lista_causali %}
+            <option value="{{ c.codice }}">{{ c.descrizione }}</option>
+        {% endfor %}
+    </datalist>
+
+    <div class="sticky-header">
+        <div class="company-title">
+            <h2><a href="{% url 'admin:anagrafica_azienda_change' azienda.id %}">{{ azienda.ragione_sociale }}</a></h2>
+            <span>Periodo: <strong>{{ periodo.nome }} {{ periodo.a }}</strong></span>
+        </div>
+        
+        <div class="month-nav">
+            <a href="{% url 'dashboard_azienda' azienda.id periodo.prec.a periodo.prec.m %}">❮ Prec</a>
+            <span>{{ periodo.nome }}</span>
+            <a href="{% url 'dashboard_azienda' azienda.id periodo.succ.a periodo.succ.m %}">Succ ❯</a>
+        </div>
+
+        <div style="display:flex; gap:10px;">
+            <button onclick="location.reload()" class="btn-action btn-refresh">🔄 Aggiorna</button>
+            <button onclick="openRangeModal()" class="btn-action btn-range">📅 Inserimento Range</button>
+            <a href="{% url 'export_csv' azienda.id periodo.a periodo.m %}" class="btn-action">⬇️ Export Ranocchi</a>
+            <a href="{% url 'report_costi_azienda' azienda.id periodo.a periodo.m %}" target="_blank" class="btn-action" style="background-color: #8e44ad;">📊 Report Costi</a>
+            
+            <button onclick="openResetModal()" class="btn-action" style="background-color: #c0392b;">🗑️ Azzera Presenze</button>
+            
+            <span id="statusIcon" style="display:none; color:#e67e22; font-weight:bold; align-self:center;">💾 Saving...</span>
+        </div>
+    </div>
+
+    <div class="grid-wrapper">
+        <table class="multi-row-table">
+            <thead>
+                <tr>
+                    <th style="left:0; z-index:1100; min-width:260px; text-align:left; padding-left:15px;">DIPENDENTE / STATISTICHE</th>
+                    <th style="left:260px; z-index:1100; min-width:80px;">VOCE</th>
+                    {% for g in giorni_mese %}
+                        <th class="{% if g.is_festivo %}sunday{% endif %}">
+                            {{ g.giorno }}<br>{{ g.weekday }}
+                        </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in dipendenti %}
+                    <tr class="row-lav">
+                        <td class="col-name" rowspan="6">
+                            <div class="dip-name">
+                                <a href="{% url 'admin:anagrafica_dipendente_change' row.obj.id %}">{{ row.obj.cognome_nome }}</a>
+                            </div>
+                            <span class="dip-role">{{ row.obj.qualifica|default:"Impiegato" }}</span>
+                            
+                            <div class="stats-grid">
+                                <div class="stat-box stat-lav" title="Ore Lavorate">LAV: {{ row.stats.ore_lav|floatformat:1 }}</div>
+                                <div class="stat-box stat-ass" title="Ore Assenza">ASS: {{ row.stats.ore_ass|floatformat:1 }}</div>
+                                
+                                <div class="stat-box stat-res-fer" title="Ferie Residue">FER: {{ row.stats.ferie_res|floatformat:1 }}</div>
+                                <div class="stat-box stat-res-rol" title="Permessi ROL Residui">ROL: {{ row.stats.rol_res|floatformat:1 }}</div>
+                                
+                                <div class="stat-box stat-not" title="Ore Notturne">NOT: {{ row.stats.ore_not|floatformat:1 }}</div>
+                                
+                                <div class="stat-box stat-cost">
+                                    <a href="{% url 'simulazione_busta_paga' row.obj.id periodo.a periodo.m %}" target="_blank" title="Clicca per simulazione cedolino">
+                                        COSTO: € {{ row.stats.costo|floatformat:0 }}
+                                    </a>
+                                </div>
+                            </div>
+                        </td>
+                        
+                        <td class="row-label">ORDINARIE</td>
+                        {% for cell in row.rows.lav %}
+                            <td class="cell-input {% if cell.is_festivo %}is-festivo{% endif %}">
+                                <input class="grid-input input-lav" type="number" step="0.5" 
+                                       value="{{ cell.val }}"
+                                       data-dip="{{ row.obj.id }}" data-date="{{ cell.data_iso }}"
+                                       onchange="saveData(this, 'lav')">
+                            </td>
+                        {% endfor %}
+                    </tr>
+
+                    <tr class="row-not">
+                        <td class="row-label">NOTTURNE</td>
+                        {% for cell in row.rows.not %}
+                            <td class="cell-input {% if cell.is_festivo %}is-festivo{% endif %}">
+                                <input class="grid-input" type="number" step="0.5" 
+                                       value="{{ cell.val }}"
+                                       data-dip="{{ row.obj.id }}" data-date="{{ cell.data_iso }}"
+                                       onchange="saveData(this, 'not')">
+                            </td>
+                        {% endfor %}
+                    </tr>
+
+                    <tr class="row-ass1-cod">
+                        <td class="row-label" style="color:#f39c12;">ASSENZA 1</td>
+                        {% for cell in row.rows.ass1_cod %}
+                            <td class="cell-input {% if cell.is_festivo %}is-festivo{% endif %}">
+                                <input class="grid-input" type="text" list="list-causali" 
+                                       value="{{ cell.val }}" style="font-weight:bold; color:#d35400;"
+                                       data-dip="{{ row.obj.id }}" data-date="{{ cell.data_iso }}"
+                                       onchange="saveData(this, 'ass1_cod')">
+                            </td>
+                        {% endfor %}
+                    </tr>
+
+                    <tr class="row-ass1-ore">
+                        <td class="row-label" style="color:#e64a19;">ORE ASS. 1</td>
+                        {% for cell in row.rows.ass1_ore %}
+                            <td class="cell-input {% if cell.is_festivo %}is-festivo{% endif %}">
+                                <input class="grid-input input-ass" type="number" step="0.5" 
+                                       value="{{ cell.val }}" style="color:#c0392b; font-weight:bold;"
+                                       data-dip="{{ row.obj.id }}" data-date="{{ cell.data_iso }}"
+                                       onchange="saveData(this, 'ass1_ore')">
+                            </td>
+                        {% endfor %}
+                    </tr>
+
+                    <tr class="row-ass2-cod">
+                        <td class="row-label" style="color:#f39c12;">ASSENZA 2</td>
+                        {% for cell in row.rows.ass2_cod %}
+                            <td class="cell-input {% if cell.is_festivo %}is-festivo{% endif %}">
+                                <input class="grid-input" type="text" list="list-causali" 
+                                       value="{{ cell.val }}" style="font-weight:bold; color:#d35400;"
+                                       data-dip="{{ row.obj.id }}" data-date="{{ cell.data_iso }}"
+                                       onchange="saveData(this, 'ass2_cod')">
+                            </td>
+                        {% endfor %}
+                    </tr>
+
+                    <tr class="row-ass2-ore">
+                        <td class="row-label" style="color:#e64a19;">ORE ASS. 2</td>
+                        {% for cell in row.rows.ass2_ore %}
+                            <td class="cell-input {% if cell.is_festivo %}is-festivo{% endif %}">
+                                <input class="grid-input input-ass" type="number" step="0.5" 
+                                       value="{{ cell.val }}" style="color:#c0392b; font-weight:bold;"
+                                       data-dip="{{ row.obj.id }}" data-date="{{ cell.data_iso }}"
+                                       onchange="saveData(this, 'ass2_ore')">
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="rangeModal" class="modal-overlay">
+    <div class="modal-box">
+        <span class="close-modal" onclick="closeRangeModal()">&times;</span>
+        <h3 class="modal-title">Inserimento Assenza Periodica</h3>
+        
+        <div class="form-group">
+            <label>Dipendente:</label>
+            <select id="rangeDip" class="form-control">
+                <option value="all">-- Tutti i Dipendenti --</option>
+                {% for row in dipendenti %}
+                    <option value="{{ row.obj.id }}">{{ row.obj.cognome_nome }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div style="display:flex; gap:10px;">
+            <div class="form-group" style="flex:1;">
+                <label>Dal:</label>
+                <input type="date" id="rangeStart" class="form-control" value="{{ periodo.a }}-{{ periodo.m|stringformat:'02d' }}-01">
+            </div>
+            <div class="form-group" style="flex:1;">
+                <label>Al:</label>
+                <input type="date" id="rangeEnd" class="form-control" value="{{ periodo.a }}-{{ periodo.m|stringformat:'02d' }}-{{ giorni_mese|length }}">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Causale:</label>
+            <input type="text" list="list-causali" id="rangeCausale" class="form-control" placeholder="Es. FER">
+        </div>
+
+        <div class="form-group">
+            <label>Ore Giornaliere (Lascia vuoto per Totali):</label>
+            <input type="number" id="rangeOre" class="form-control" placeholder="Es. 8">
+        </div>
+
+        <button onclick="applyRange()" class="btn-submit">APPLICA PERIODO</button>
+    </div>
+</div>
+
+<div id="resetModal" class="modal-overlay">
+    <div class="modal-box" style="border-top: 5px solid #c0392b;">
+        <span class="close-modal" onclick="closeResetModal()">&times;</span>
+        <h3 class="modal-title" style="color: #c0392b;">⚠️ Azzeramento Presenze</h3>
+        <p style="font-size: 13px; color: #555; margin-bottom: 20px;">
+            Scegli il dipendente di cui vuoi cancellare le assenze inserite. <br>
+            <strong>Nota:</strong> L'operazione riporterà la griglia all'orario lavorativo standard (senza ferie/permessi).
+        </p>
+        
+        <div class="form-group">
+            <label>Dipendente da Azzerare:</label>
+            <select id="resetDip" class="form-control">
+                <option value="all" style="font-weight: bold; color: #c0392b;">-- TUTTI I DIPENDENTI --</option>
+                {% for row in dipendenti %}
+                    <option value="{{ row.obj.id }}">{{ row.obj.cognome_nome }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button onclick="applyReset()" class="btn-submit" style="background-color: #c0392b; margin-top: 10px;">🗑️ CONFERMA AZZERAMENTO</button>
+    </div>
+</div>
+
+<script>
+    // --- GESTIONE SALVATAGGIO SINGOLA CELLA ---
+    function saveData(input, campo) {
+        let val = input.value;
+        let dipId = input.dataset.dip;
+        let dateIso = input.dataset.date;
+
+        document.getElementById('statusIcon').style.display = 'inline';
+        input.style.backgroundColor = '#fffacd';
+
+        fetch("{% url 'salva_presenze_json' %}", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
+            body: JSON.stringify({ modifiche: [{ dip_id: dipId, data: dateIso, campo: campo, valore: val }] })
+        })
+        .then(r => r.json())
+        .then(d => {
+            if(d.status === 'ok') {
+                input.style.backgroundColor = '';
+                setTimeout(() => { document.getElementById('statusIcon').style.display = 'none'; }, 500);
+                
+                if(campo.includes('cod') || campo.includes('ore')) {
+                    location.reload();
+                }
+
+            } else {
+                alert("Errore: " + d.msg);
+                input.style.backgroundColor = '#ffcccc';
+            }
+        });
+    }
+
+    // --- GESTIONE MODALE RANGE ---
+    function openRangeModal() { document.getElementById('rangeModal').style.display = 'flex'; }
+    function closeRangeModal() { document.getElementById('rangeModal').style.display = 'none'; }
+
+    function applyRange() {
+        let dipId = document.getElementById('rangeDip').value;
+        let startVal = document.getElementById('rangeStart').value;
+        let endVal = document.getElementById('rangeEnd').value;
+        let causale = document.getElementById('rangeCausale').value;
+        let ore = document.getElementById('rangeOre').value;
+
+        if(!causale) { alert("Inserisci una causale!"); return; }
+
+        let modifiche = [];
+        let cur = new Date(startVal);
+        let end = new Date(endVal);
+        
+        while(cur <= end) {
+            let year = cur.getFullYear();
+            let month = String(cur.getMonth() + 1).padStart(2, '0');
+            let day = String(cur.getDate()).padStart(2, '0');
+            let isoDate = `${year}-${month}-${day}`;
+            
+            let targetDips = [];
+            if(dipId === 'all') {
+                document.querySelectorAll('.input-lav[data-date="'+isoDate+'"]').forEach(el => {
+                    targetDips.push(el.dataset.dip);
+                });
+            } else {
+                targetDips.push(dipId);
+            }
+
+            targetDips.forEach(id => {
+                modifiche.push({ dip_id: id, data: isoDate, campo: 'ass1_cod', valore: causale });
+                if(ore) modifiche.push({ dip_id: id, data: isoDate, campo: 'ass1_ore', valore: ore });
+            });
+            
+            cur.setDate(cur.getDate() + 1);
+        }
+
+        fetch("{% url 'salva_presenze_json' %}", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
+            body: JSON.stringify({ modifiche: modifiche })
+        })
+        .then(r => r.json())
+        .then(d => {
+            if(d.status === 'ok') {
+                location.reload(); 
+            } else {
+                alert("Errore massivo: " + d.msg);
+            }
+        });
+    }
+
+    // --- GESTIONE MODALE AZZERAMENTO ---
+    function openResetModal() { document.getElementById('resetModal').style.display = 'flex'; }
+    function closeResetModal() { document.getElementById('resetModal').style.display = 'none'; }
+
+    function applyReset() {
+        let dipId = document.getElementById('resetDip').value;
+        let dipNome = document.getElementById('resetDip').options[document.getElementById('resetDip').selectedIndex].text;
+
+        if(!confirm(`Sei sicuro di voler azzerare le presenze per:\n${dipNome}?\nL'operazione è irreversibile.`)) {
+            return;
+        }
+
+        document.getElementById('statusIcon').style.display = 'inline';
+        document.getElementById('statusIcon').innerText = '🗑️ Cancellazione in corso...';
+        closeResetModal();
+
+        fetch("{% url 'azzera_presenze_json' %}", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
+            body: JSON.stringify({ 
+                dip_id: dipId, 
+                anno: {{ periodo.a }}, 
+                mese: {{ periodo.m }}, 
+                azienda_id: {{ azienda.id }} 
+            })
+        })
+        .then(r => r.json())
+        .then(d => {
+            if(d.status === 'ok') {
+                location.reload(); 
+            } else {
+                alert("Errore durante l'azzeramento: " + d.msg);
+                document.getElementById('statusIcon').style.display = 'none';
+                document.getElementById('statusIcon').innerText = '💾 Saving...'; 
+            }
+        });
+    }
+</script>
+{% endblock %}

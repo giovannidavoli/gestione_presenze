@@ -86,7 +86,6 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # --- GESTIONE MEDIA (PDF STACOS E LUL) ---
-# Questa sezione risolve l'errore 404
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
@@ -96,3 +95,13 @@ AUTH_USER_MODEL = 'core.User'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard_generale'
+
+# --- CONFIGURAZIONE EMAIL UNIFICATA (ARUBA) ---
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtps.aruba.it'
+EMAIL_PORT = 465
+EMAIL_USE_SSL = True   # Aruba sulla 465 richiede SSL
+EMAIL_USE_TLS = False  # Deve essere False se SSL è True
+EMAIL_HOST_USER = 'info@studio3lamezia.it'
+EMAIL_HOST_PASSWORD = 'viamiceli41A*' 
+DEFAULT_FROM_EMAIL = 'Studio3 SRL <info@studio3lamezia.it>'

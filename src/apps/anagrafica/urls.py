@@ -33,4 +33,11 @@ urlpatterns = [
 
     # 9. API JSON per Azzerare le presenze
     path('api/azzera-presenze/', views.azzera_presenze_json, name='azzera_presenze_json'),
+    
+# 10. Gestione Anagrafica (Banca Dati Lato Cliente)
+    path('banca-dati/<int:pk>/', views.lista_dipendenti_azienda, name='lista_dipendenti'),
+    path('banca-dati/<int:azienda_id>/nuovo/', views.gestisci_dipendente, name='nuovo_dipendente'),
+    path('banca-dati/<int:azienda_id>/modifica/<int:dip_id>/', views.gestisci_dipendente, name='modifica_dipendente'),
+    path('dipendente/<int:dipendente_id>/turni-avanzati/', views.forza_ore_range_view, name='forza_ore_range'),
+    path('admin-studio/invio-password/', views.gestione_password_massiva, name='gestione_password_massiva'),        
 ]

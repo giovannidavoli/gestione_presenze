@@ -10,6 +10,8 @@ class Studio(models.Model):
     nome = models.CharField(max_length=255, verbose_name="Nome Studio Professionale")
     sede = models.CharField(max_length=255, verbose_name="Sede Studio")
     partita_iva = models.CharField(max_length=11, null=True, blank=True, verbose_name="Partita IVA")
+    # AGGIUNTO: Campo per il logo dello studio utile nella simulazione busta paga
+    logo = models.ImageField(upload_to='loghi_studio/', null=True, blank=True, verbose_name="Logo Studio")
     
     def __str__(self): return self.nome
     class Meta:
@@ -20,6 +22,9 @@ class CCNL(models.Model):
     nome = models.CharField(max_length=100, verbose_name="Nome Contratto")
     divisore_orario_standard = models.DecimalField(max_digits=6, decimal_places=2, default=173.00, verbose_name="Divisore Contrattuale")
     
+    # --- NUOVO CAMPO AGGIUNTO PER GESTIRE 13esima o 14esima ---
+    mensilita = models.IntegerField(default=13, verbose_name="Numero Mensilità (13 o 14)")
+
     # --- MAGGIORAZIONI (%) ---
     magg_supplementare = models.DecimalField(max_digits=5, decimal_places=2, default=10.00, verbose_name="% Lavoro Suppl.")
     magg_straordinario = models.DecimalField(max_digits=5, decimal_places=2, default=15.00, verbose_name="% Lavoro Straord.")
@@ -140,22 +145,22 @@ class CausaleAssenza(models.Model):
     class Meta:
         verbose_name_plural = "6. Causali GIS Ranocchi"
 
-# ==============================================================================
+## ==============================================================================
 # 4. ANAGRAFICA AZIENDALE E DIPENDENTI
 # ==============================================================================
-
 
 class Azienda(models.Model):
     studio = models.ForeignKey(Studio, on_delete=models.CASCADE, related_name='aziende')
     
-    # RIGA MODIFICATA: Usa il modello utente personalizzato di Django
     utente = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='azienda_gestita', verbose_name="Utente di Accesso (Cliente)")
     
     codice = models.CharField(max_length=20, unique=True)
     ragione_sociale = models.CharField(max_length=255)
+    email_amministrazione = models.EmailField(max_length=255, null=True, blank=True, verbose_name="Email Amministrazione")
     ccnl = models.ForeignKey(CCNL, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="CCNL Applicato")
+    # AGGIUNTO: Campo logo per visualizzazione intestazione azienda
+    logo = models.ImageField(upload_to='loghi_aziende/', null=True, blank=True, verbose_name="Logo Azienda")
     
-    # Per il calendario italiano personalizzato
     giorno_patrono = models.IntegerField(null=True, blank=True, help_text="GG")
     mese_patrono = models.IntegerField(null=True, blank=True, help_text="MM")
 
@@ -178,7 +183,6 @@ class Dipendente(models.Model):
     tipo_paga = models.CharField(max_length=50, default="Mensile")
     perc_part_time = models.DecimalField(max_digits=5, decimal_places=2, default=100.00)
     
-    # Campo per il "Copia Pianificato" con notturno
     notturno_standard = models.DecimalField(max_digits=4, decimal_places=2, default=0.00, verbose_name="Ore Notturne fisse")
     banca_ore_residuo = models.DecimalField(max_digits=12, decimal_places=2, default=0.00, verbose_name="Residuo Banca Ore")
 
@@ -186,7 +190,7 @@ class Dipendente(models.Model):
     data_cessazione = models.DateField(null=True, blank=True)
     data_termine = models.DateField(null=True, blank=True)
 
-    # --- DETTAGLIO PAGA GIS (18 Elementi) ---
+    # Elenco elementi retributivi (1-18)
     elemento_1 = models.DecimalField(max_digits=12, decimal_places=5, default=0)
     elemento_2 = models.DecimalField(max_digits=12, decimal_places=5, default=0)
     elemento_3 = models.DecimalField(max_digits=12, decimal_places=5, default=0)
@@ -206,13 +210,11 @@ class Dipendente(models.Model):
     elemento_17 = models.DecimalField(max_digits=12, decimal_places=5, default=0)
     elemento_18 = models.DecimalField(max_digits=12, decimal_places=5, default=0)
     
-    # --- COSTI IMPORTATI ---
     lordo_mensile_calcolato = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     costo_inps_ditta = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     costo_inail_ditta = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     rateo_tfr = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
 
-    # --- RATEI DETTAGLIATI (TUTTI I 16 CAMPI) ---
     ferie_residuo_ap = models.DecimalField(max_digits=12, decimal_places=3, default=0)
     ferie_maturate = models.DecimalField(max_digits=12, decimal_places=3, default=0)
     ferie_godute = models.DecimalField(max_digits=12, decimal_places=3, default=0)
@@ -233,7 +235,6 @@ class Dipendente(models.Model):
     ex_fest_goduti = models.DecimalField(max_digits=12, decimal_places=3, default=0)
     ex_fest_residuo_attuale = models.DecimalField(max_digits=12, decimal_places=3, default=0)
 
-    # --- ORARIO SETTIMANALE ---
     ore_lun = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
     ore_mar = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
     ore_mer = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
@@ -242,9 +243,35 @@ class Dipendente(models.Model):
     ore_sab = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
     ore_dom = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
 
+   # ==========================================================================
+    # LOGICA DI CALCOLO DINAMICA (CON INTERCETTAZIONE AL SALVATAGGIO)
     # ==========================================================================
-    # LOGICA DI CALCOLO DINAMICA
-    # ==========================================================================
+
+    def save(self, *args, **kwargs):
+        # 1. Calcolo del tabellare grezzo (somma elementi da 1 a 18 esportati da GIS)
+        # Usiamo list comprehension sicura per evitare errori se un campo è None
+        tabellare = sum([getattr(self, f'elemento_{i}') or Decimal('0.00') for i in range(1, 19)])
+        
+        # 2. Intercettiamo e correggiamo il LORDO prima di scriverlo fisicamente nel DB
+        tipo = self.tipo_paga.strip().lower() if self.tipo_paga else "mensile"
+        
+        if tipo in ["oraria", "orario"]:
+            # LOGICA ORARIA: Paga oraria (es. 7,59€) moltiplicata per ore medie mensili
+            # Formula: (Ore sett. * 52 sett.) / 12 mesi
+            ore_sett = sum([self.ore_lun, self.ore_mar, self.ore_mer, self.ore_gio, self.ore_ven, self.ore_sab, self.ore_dom]) or Decimal("0.00")
+            ore_medie_mensili = (ore_sett * Decimal("52")) / Decimal("12")
+            
+            # Assegnazione (anche se è 0, così non rimangono vecchi valori sporchi)
+            self.lordo_mensile_calcolato = (tabellare * ore_medie_mensili).quantize(Decimal("0.01"))
+        
+        else:
+            # LOGICA MENSILE: Il tabellare esportato da GIS per i mensilizzati
+            # corrisponde GIA' alla loro paga mensile base (anche se part-time).
+            # Non dobbiamo riproporzionarlo un'altra volta per la % part_time, 
+            # altrimenti rischiamo di abbatterlo due volte!
+            self.lordo_mensile_calcolato = tabellare.quantize(Decimal("0.01"))
+                
+        super(Dipendente, self).save(*args, **kwargs)
 
     @property
     def contratto_attivo(self):
@@ -256,58 +283,62 @@ class Dipendente(models.Model):
 
     @property
     def totale_paga_tabellare_individuale(self):
-        return sum([getattr(self, f'elemento_{i}') for i in range(1, 19)])
+        return sum([getattr(self, f'elemento_{i}') or Decimal('0.00') for i in range(1, 19)])
 
     @property
     def lordo_mensile_base_calcolato(self):
-        tabellare = self.totale_paga_tabellare_individuale
-        perc = self.perc_part_time / Decimal("100.00")
-        contratto = self.contratto_attivo
-        divisore = contratto.divisore_orario_standard if contratto else Decimal("173.00")
-        
-        if self.tipo_paga == "Oraria":
-            return (tabellare * divisore * perc).quantize(Decimal("0.01"))
-        return (tabellare * perc).quantize(Decimal("0.01"))
+        # Grazie alla funzione save() qui sopra, questo campo nel DB è già perfetto.
+        return self.lordo_mensile_calcolato or Decimal("0.00")
 
     @property
     def calcola_costo_aziendale_mensile_totale(self):
-        return (self.lordo_mensile_base_calcolato + self.costo_inps_ditta + self.costo_inail_ditta + self.rateo_tfr).quantize(Decimal("0.01"))
+        # Il lordo è già corretto alla fonte. Facciamo solo una semplice somma degli oneri aziendali.
+        lordo = self.lordo_mensile_calcolato or Decimal("0.00")
+        inps = self.costo_inps_ditta or Decimal("0.00")
+        inail = self.costo_inail_ditta or Decimal("0.00")
+        tfr = self.rateo_tfr or Decimal("0.00")
+        
+        return (lordo + inps + inail + tfr).quantize(Decimal("0.01"))
 
     @property
     def calcola_costo_orario_reale(self):
+        # Il costo orario medio per budgeting (usato nella dashboard generale) si basa sulle ore medie mensili
         ore_mese = self.ore_settimanali * Decimal("4.333")
         if ore_mese > 0:
             return (self.calcola_costo_aziendale_mensile_totale / ore_mese).quantize(Decimal("0.01"))
         return Decimal("0.00")
 
-    def __str__(self): return self.cognome_nome
+    def __str__(self): 
+        return self.cognome_nome
+        
     class Meta:
         verbose_name_plural = "5. Anagrafica Dipendenti"
-        unique_together = ('azienda', 'codice') 
-
+        unique_together = ('azienda', 'codice')
+        
 # ==============================================================================
 # 5. REGISTRO PRESENZE GIORNALIERO (STRUTTURA GIS RANOCCHI)
 # ==============================================================================
 
 class PresenzaGiornaliera(models.Model):
-    """Salva ogni giorno del mese per creare la matrice del file CSV."""
     dipendente = models.ForeignKey(Dipendente, on_delete=models.CASCADE, related_name='presenze')
     data = models.DateField()
     
-    # Riga 1 Ranocchi: 'Ore lavorate'
     ore_lavorate = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
-    # Riga 2 Ranocchi: 'di cui notturne'
     di_cui_notturne = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
-    
     straordinarie = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
     is_festivo = models.BooleanField(default=False)
+    
+    # --- CAMPI AGGIUNTI PER LOGICA SWAP DEI TURNI E FORZATURA ---
+    # AGGIUNTO: Permette di marcare esplicitamente un giorno come riposo (vince su contratto)
+    is_riposo = models.BooleanField(default=False, verbose_name="Forza Riposo")
+    # AGGIUNTO: Campo note per tracciare lo spostamento delle ore o motivi di forzatura
+    note = models.CharField(max_length=255, null=True, blank=True, verbose_name="Note Spostamento/Turno")
 
     class Meta:
         unique_together = ('dipendente', 'data')
         verbose_name_plural = "7. Registro Presenze Giornaliero"
 
 class EventoAssenza(models.Model):
-    """Righe aggiuntive 'Causale X' nel file CSV Ranocchi."""
     giornata = models.ForeignKey(PresenzaGiornaliera, on_delete=models.CASCADE, related_name='eventi')
     causale = models.ForeignKey(CausaleAssenza, on_delete=models.PROTECT)
     ore = models.DecimalField(max_digits=5, decimal_places=2)
@@ -332,3 +363,22 @@ class CaricamentoDati(models.Model):
     def __str__(self): return f"Caricamento {self.id} - {self.data_operazione}"
     class Meta:
         verbose_name_plural = "Caricamenti Manuali"
+
+# ==============================================================================
+# 7. BACHECA NOTE AZIENDALI
+# ==============================================================================
+
+class NotaMensileAzienda(models.Model):
+    """Cassettino per memorizzare comunicazioni variabili mensili (Premi, Buoni pasto, Trasferte)."""
+    azienda = models.ForeignKey(Azienda, on_delete=models.CASCADE, related_name='note_mensili')
+    anno = models.IntegerField()
+    mese = models.IntegerField()
+    testo = models.TextField(blank=True, null=True, verbose_name="Note e Rimborsi")
+    data_aggiornamento = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "9. Note Mensili Aziende"
+        unique_together = ('azienda', 'anno', 'mese')
+
+    def __str__(self):
+        return f"Note {self.azienda.ragione_sociale} - {self.mese}/{self.anno}"

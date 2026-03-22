@@ -5,6 +5,10 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    
+    # --- ROTTA PER RECUPERO PASSWORD DI DJANGO ---
+    path('accounts/', include('django.contrib.auth.urls')),
+    
     path('', include('apps.anagrafica.urls')),
     path('importer/', include('apps.importer.urls')), # Il nuovo modulo standalone
 ]

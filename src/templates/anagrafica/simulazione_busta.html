@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="it">
 
@@ -5,11 +6,13 @@
     <meta charset="UTF-8">
     <title>Simulazione Cedolino - {{ dipendente.cognome_nome }}</title>
     <style>
+        /* Reset e Font per stile professionale */
         body {
             font-family: 'Courier New', Courier, monospace;
             background: #525659;
             padding: 20px;
             margin: 0;
+            -webkit-print-color-adjust: exact; /* Forza i colori in stampa */
         }
 
         /* Foglio A4 Simulato */
@@ -24,14 +27,26 @@
             position: relative;
         }
 
-        /* Intestazione */
+        /* Intestazione con Logo */
         .header {
             border-bottom: 2px solid #000;
-            padding-bottom: 10px;
+            padding-bottom: 15px;
             margin-bottom: 20px;
             display: flex;
             justify-content: space-between;
-            align-items: flex-end;
+            align-items: center; /* Allineamento migliorato per il logo */
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo-img {
+            max-height: 70px;
+            max-width: 150px;
+            object-fit: contain;
         }
 
         .company-info h1 {
@@ -74,7 +89,7 @@
             border-bottom: 1px solid #000;
             padding: 5px;
             text-transform: uppercase;
-            background: #eee;
+            background: #eee !important; /* Importante per stampa */
         }
 
         table.cedolino-table td {
@@ -98,7 +113,7 @@
         .ratei-title {
             font-size: 11px;
             font-weight: bold;
-            background: #f0f0f0;
+            background: #f0f0f0 !important;
             padding: 2px 5px;
             margin-bottom: 5px;
             border-bottom: 1px solid #ccc;
@@ -114,7 +129,7 @@
             text-align: right;
             border-bottom: 1px solid #ccc;
             padding: 2px 5px;
-            background: white; /* Override grigio header */
+            background: white;
         }
         table.ratei-table th:first-child { text-align: left; }
         
@@ -137,7 +152,7 @@
             border: 3px double #333;
             padding: 15px 30px;
             text-align: center;
-            background: #fdfefe;
+            background: #fdfefe !important;
             transform: rotate(-1deg);
         }
 
@@ -165,7 +180,7 @@
             text-align: right;
         }
 
-        /* Bottone Stampa (non si vede in stampa) */
+        /* Bottone Stampa (nascosto in stampa) */
         .no-print {
             text-align: center;
             margin-bottom: 20px;
@@ -187,7 +202,30 @@
             background: #c0392b;
         }
 
+        /* Matrice Costi */
+        .cost-matrix {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+            background: #f4f6f7 !important;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #d5dbdb;
+        }
+        .cost-item { text-align: center; }
+        .cost-label { font-size: 9px; color: #7f8c8d; text-transform: uppercase; margin-bottom: 3px; }
+        .cost-value { font-size: 14px; font-weight: bold; color: #2c3e50; }
+
+        /* =====================================================================
+           CSS PER STAMPA PDF (MEDIA PRINT)
+           ===================================================================== */
         @media print {
+            @page {
+                size: A4;
+                margin: 0; /* Gestito dal padding della box */
+            }
+
             body {
                 background: white;
                 padding: 0;
@@ -197,12 +235,29 @@
                 box-shadow: none;
                 margin: 0;
                 width: 100%;
-                height: auto;
+                min-height: 100%;
+                border: none;
+                padding: 10mm; /* Ridotto leggermente per i margini stampante */
             }
 
             .no-print {
-                display: none;
+                display: none !important;
             }
+
+            .netto-box {
+                transform: none; /* Rimuove rotazione per evitare glitch grafici */
+                background-color: #fdfefe !important;
+                border: 2px solid #000 !important;
+            }
+
+            .cost-matrix {
+                background-color: #f4f6f7 !important;
+                border: 1px solid #ccc !important;
+            }
+            
+            /* Assicura che i testi colorati rimangano leggibili */
+            .cost-value { color: #000 !important; }
+            .netto-val { color: #000 !important; }
         }
     </style>
 </head>
@@ -216,13 +271,17 @@
 
     <div class="cedolino-box">
         <div class="header">
-            <div class="company-info">
-                <small style="color:#666;">DATORE DI LAVORO</small><br>
-                <h1>{{ dipendente.azienda.ragione_sociale }}</h1>
-                <small>P.IVA: {{ dipendente.azienda.piva|default:"-" }}</small>
+            <div class="header-left">
+                <img src="{% static 'img/logo_studio.jpg' %}" alt="Logo Studio" class="logo-studio" style="max-height: 70px; max-width: 150px; object-fit: contain;">
+                
+                <div class="company-info">
+                    <small style="color:#666;">DATORE DI LAVORO</small><br>
+                    <h1>{{ dipendente.azienda.ragione_sociale }}</h1>
+                    <small>P.IVA: {{ dipendente.azienda.piva|default:"-" }}</small>
+                </div>
             </div>
             <div class="periodo-info">
-                CEDOLINO PAGA<br>
+                CEDOLINO PAGA (Simulazione)<br>
                 MESE: {{ periodo.mese }} / {{ periodo.anno }}
             </div>
         </div>
@@ -243,10 +302,10 @@
             </div>
             <div class="row-info">
                 <span><strong>DATA ASSUNZIONE:</strong> {{ dipendente.data_assunzione|date:"d/m/Y" }}</span>
-                <span><strong>SEDE:</strong> Sede Principale</span>
+                <span><strong>CCNL:</strong> {{ dipendente.contratto_attivo.nome }} ({{ dipendente.contratto_attivo.mensilita }} ms.)</span>
             </div>
             <div style="border-top:1px dashed #666; margin-top:5px; padding-top:5px;" class="row-info">
-                <span><strong>ORARIO:</strong> {{ dati.ore_settimanali|floatformat:0 }} ore/sett.</span>
+                <span><strong>ORARIO CONTRATTUALE:</strong> {{ dati.ore_settimanali|floatformat:0 }} ore/sett.</span>
                 <span><strong>PERC. PART-TIME:</strong> {{ dati.perc_part_time }}%</span>
             </div>
         </div>
@@ -262,15 +321,15 @@
             </thead>
             <tbody>
                 <tr>
-                    <td>RETRIBUZIONE MENSILE (Base + Contingenza)</td>
-                    <td class="num">26,00</td>
+                    <td>RETRIBUZIONE MENSILE LORDA (Tabellare)</td>
+                    <td class="num">Mensile</td>
                     <td class="num">{{ dati.lordo_totale|floatformat:2 }}</td> 
                     <td class="num"></td>
                 </tr>
 
                 {% if dati.ore_lavorate > 0 %}
                 <tr>
-                    <td>ORE ORDINARIE LAVORATE</td>
+                    <td>ORE ORDINARIE EFFETTIVE NEL MESE</td>
                     <td class="num">{{ dati.ore_lavorate|floatformat:2 }}</td>
                     <td class="num">incluso</td>
                     <td class="num"></td>
@@ -279,7 +338,7 @@
 
                 {% if dati.ore_assenza > 0 %}
                 <tr>
-                    <td>ASSENZE RETRIBUITE (Ferie/Permessi)</td>
+                    <td>ASSENZE RETRIBUITE (Ferie/Permessi Goduti)</td>
                     <td class="num">{{ dati.ore_assenza|floatformat:2 }}</td>
                     <td class="num">incluso</td>
                     <td class="num"></td>
@@ -288,7 +347,7 @@
                 
                 {% if dati.ore_notturne > 0 %}
                 <tr>
-                    <td>MAGGIORAZIONE NOTTURNA (20%)</td>
+                    <td>MAGGIORAZIONE NOTTURNA ({{ dipendente.contratto_attivo.magg_notturna }}%)</td>
                     <td class="num">{{ dati.ore_notturne|floatformat:2 }}</td>
                     <td class="num">{{ dati.valore_notturno|floatformat:2 }}</td>
                     <td class="num"></td>
@@ -297,7 +356,7 @@
 
                 {% if dati.ore_straordinarie > 0 %}
                 <tr>
-                    <td>LAVORO STRAORDINARIO (30%)</td>
+                    <td>LAVORO STRAORDINARIO ({{ dipendente.contratto_attivo.magg_straordinario }}%)</td>
                     <td class="num">{{ dati.ore_straordinarie|floatformat:2 }}</td>
                     <td class="num">{{ dati.valore_straord|floatformat:2 }}</td>
                     <td class="num"></td>
@@ -306,21 +365,21 @@
 
 
                 <tr style="background-color: #f9f9f9; font-weight:bold; border-top: 2px solid #000;">
-                    <td>TOTALE LORDO IMPONIBILE</td>
+                    <td>TOTALE LORDO IMPONIBILE DEL MESE</td>
                     <td class="num"></td>
                     <td class="num">{{ dati.lordo_totale|floatformat:2 }}</td>
                     <td class="num"></td>
                 </tr>
 
                 <tr>
-                    <td>CONTRIBUTI SOCIALI (IVS 9,19%)</td>
+                    <td>CONTRIBUTI SOCIALI A CARICO DIPENDENTE (IVS 9,19%)</td>
                     <td class="num">9,19 %</td>
                     <td class="num"></td>
                     <td class="num">{{ dati.inps_dip|floatformat:2 }}</td>
                 </tr>
 
                 <tr>
-                    <td>IRPEF NETTA (Lorda - Detrazioni)</td>
+                    <td>IRPEF NETTA STIMATA (Lorda - Detrazioni Lavoro Dip.)</td>
                     <td class="num"></td>
                     <td class="num"></td>
                     <td class="num">{{ dati.irpef_netta|floatformat:2 }}</td>
@@ -329,27 +388,27 @@
         </table>
         
         <div class="ratei-box">
-            <div class="ratei-title">PROSPETTO FERIE E PERMESSI</div>
+            <div class="ratei-title">PROSPETTO RATEI (Aggiornato al mese in corso)</div>
             <table class="ratei-table">
                 <thead>
                     <tr>
-                        <th>DESCRIZIONE</th>
-                        <th>RESIDUO A.P.</th>
-                        <th>MATURATO</th>
-                        <th>GODUTO</th>
-                        <th>SALDO</th>
+                        <th>DESCRIZIONE RATEO</th>
+                        <th>RESIDUO PREC.</th>
+                        <th>MATURATO MESE</th>
+                        <th>GODUTO MESE</th>
+                        <th>SALDO ATTUALE</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td><strong>FERIE (Giorni)</strong></td>
+                        <td><strong>FERIE (Espresse in Giorni)</strong></td>
                         <td>{{ dati.ratei.ferie.prec|floatformat:2 }}</td>
                         <td>{{ dati.ratei.ferie.mat|floatformat:2 }}</td>
                         <td>{{ dati.ratei.ferie.god|floatformat:2 }}</td>
                         <td><strong>{{ dati.ratei.ferie.saldo|floatformat:2 }}</strong></td>
                     </tr>
                     <tr>
-                        <td><strong>PERMESSI ROL (Ore)</strong></td>
+                        <td><strong>PERMESSI / ROL (Espressi in Ore)</strong></td>
                         <td>{{ dati.ratei.rol.prec|floatformat:2 }}</td>
                         <td>{{ dati.ratei.rol.mat|floatformat:2 }}</td>
                         <td>{{ dati.ratei.rol.god|floatformat:2 }}</td>
@@ -361,18 +420,58 @@
 
         <div class="netto-wrapper">
             <div class="netto-box">
-                <div class="netto-title">NETTO DA PAGARE</div>
+                <div class="netto-title">NETTO IN BUSTA (STIMA)</div>
                 <div class="netto-val">€ {{ dati.netto|floatformat:2 }}</div>
             </div>
         </div>
 
-        <div class="footer-costo">
-            --- SEZIONE STATISTICA AZIENDALE ---<br>
-            <strong>COSTO TOTALE AZIENDA: € {{ dati.costo_azienda|floatformat:2 }}</strong><br>
-            <span style="font-size:9px;">(Include Retribuzione Lorda + INPS Azienda + INAIL + Rateo TFR)</span>
-        </div>
-    </div>
+        <div class="footer-costo" style="border:none; margin-top:40px;">
+            
+            <div style="text-align: left; margin-bottom: 5px; font-size: 11px; font-weight: bold; color: #2980b9; border-bottom: 1px solid #2980b9; padding-bottom: 3px;">
+                DETTAGLIO ONERI AZIENDALI SUL LORDO (Mese Corrente)
+            </div>
+            
+            <div class="cost-matrix" style="grid-template-columns: repeat(3, 1fr); margin-top: 5px; margin-bottom: 20px; background: #eaf2f8 !important; border-color: #a9cce3;">
+                <div class="cost-item">
+                    <div class="cost-label">Costo INPS Ditta</div>
+                    <div class="cost-value">€ {{ dati.inps_ditta|floatformat:2 }}</div>
+                </div>
+                <div class="cost-item">
+                    <div class="cost-label">Costo INAIL Ditta</div>
+                    <div class="cost-value">€ {{ dati.inail_ditta|floatformat:2 }}</div>
+                </div>
+                <div class="cost-item">
+                    <div class="cost-label">Rateo TFR Mensile</div>
+                    <div class="cost-value">€ {{ dati.tfr_ditta|floatformat:2 }}</div>
+                </div>
+            </div>
 
-</body>
+            <div style="text-align: center; margin-bottom: 10px; font-size: 13px; font-weight: bold; color: #2c3e50; border-bottom: 1px solid #bdc3c7; padding-bottom: 5px;">
+                DASHBOARD CONTROLLO DI GESTIONE - MATRICE COSTI AZIENDALI
+            </div>
+            
+            <div class="cost-matrix">
+                <div class="cost-item">
+                    <div class="cost-label">Costo Orario</div>
+                    <div class="cost-value">€ {{ dati.costo_orario_medio|floatformat:2 }}</div>
+                </div>
+                <div class="cost-item">
+                    <div class="cost-label">Costo Giorn.</div>
+                    <div class="cost-value">€ {{ dati.costo_giornaliero_medio|floatformat:2 }}</div>
+                </div>
+                <div class="cost-item">
+                    <div class="cost-label">Costo Sett.</div>
+                    <div class="cost-value">€ {{ dati.costo_settimanale|floatformat:2 }}</div>
+                </div>
+                <div class="cost-item">
+                    <div class="cost-label">Costo Mensile</div>
+                    <div class="cost-value">€ {{ dati.costo_azienda|floatformat:2 }}</div>
+                </div>
+                <div class="cost-item">
+                    <div class="cost-label">Previsione Annua ({{ dati.num_ms }}ms)</div>
+                    <div class="cost-value" style="color:#c0392b;">€ {{ dati.costo_annuo|floatformat:2 }}</div>
+                </div>
+            </div>
 
-</html>
+            <div style="text-align: center; margin-top: 15px; font-size: 10px; color: #7f8c8d; line-height: 1.2;">
+                * I costi includono: Retribuzione Lorda, Contributi INPS Ditta

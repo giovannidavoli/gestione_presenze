@@ -4,108 +4,453 @@
 {% block extrastyle %}
 {{ block.super }}
 <style>
-    .dashboard-container { padding: 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f9; min-height: 100vh; }
-    
-    /* Header Fisso */
-    .sticky-header { 
-        position: sticky; top: 0; background: white; z-index: 2000; 
-        padding: 15px 20px; border-bottom: 2px solid #bdc3c7; 
-        display: flex; justify-content: space-between; align-items: center; 
-        box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-radius: 8px; margin-bottom: 20px;
+    /* TEMA PROFESSIONALE: BIANCO E BLU TENUE */
+    .dashboard-container {
+        padding: 20px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: #f4f7f6;
+        min-height: 100vh;
     }
-    
-    .company-title h2 { margin: 0; font-size: 22px; color: #2c3e50; font-weight: 700; }
-    .company-title h2 a { text-decoration: none; color: #2c3e50; border-bottom: 2px solid transparent; transition: border 0.3s; }
-    .company-title h2 a:hover { border-bottom: 2px solid #3498db; color: #3498db; }
-    .company-title span { color: #7f8c8d; font-size: 14px; }
-    
-    .month-nav { display: flex; align-items: center; gap: 15px; font-size: 18px; font-weight: bold; color: #34495e; }
-    .month-nav a { text-decoration: none; color: #34495e; padding: 5px 10px; border-radius: 4px; transition: background 0.2s; }
-    .month-nav a:hover { background: #ecf0f1; }
 
-    /* Pulsanti Azione */
-    .btn-action { background: #27ae60; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; border: none; cursor: pointer; transition: 0.2s; }
-    .btn-action:hover { background: #219150; transform: translateY(-1px); }
-    .btn-range { background: #3498db; }
-    .btn-range:hover { background: #2980b9; }
-    .btn-refresh { background: #f39c12; }
-    .btn-refresh:hover { background: #d35400; }
+    /* Header Fisso */
+    .sticky-header {
+        position: sticky;
+        top: 0;
+        background: #ffffff;
+        z-index: 2000;
+        padding: 15px 20px;
+        border-bottom: 3px solid #eaf2f8;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.03);
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .company-title {
+        display: flex;
+        align-items: center;
+    }
+
+    .company-title h2 {
+        margin: 0;
+        font-size: 22px;
+        color: #1f618d;
+        font-weight: 700;
+    }
+
+    .company-title h2 a {
+        text-decoration: none;
+        color: #1f618d;
+        transition: color 0.3s;
+    }
+
+    .company-title h2 a:hover {
+        color: #154360;
+    }
+
+    .company-title span {
+        color: #7f8c8d;
+        font-size: 14px;
+        display: block;
+        margin-top: 2px;
+    }
+
+    .month-nav {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        font-size: 18px;
+        font-weight: bold;
+        color: #1f618d;
+    }
+
+    .month-nav a {
+        text-decoration: none;
+        color: #1f618d;
+        padding: 5px 10px;
+        border-radius: 4px;
+        border: 1px solid transparent;
+        transition: 0.2s;
+    }
+
+    .month-nav a:hover {
+        background: #eaf2f8;
+        border: 1px solid #d4e6f1;
+    }
+
+    /* ==========================================
+        PULSANTI AZIONE 
+        ========================================== */
+    .btn-action {
+        background: #eaf2f8;
+        color: #1f618d !important;
+        border: 1px solid #d4e6f1;
+        padding: 10px 15px;
+        text-decoration: none;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 13px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-action:hover {
+        background: #d4e6f1;
+        color: #154360 !important;
+        border-color: #a9cce3;
+        transform: translateY(-1px);
+    }
 
     /* GRIGLIA DATI */
-    .grid-wrapper { overflow: auto; max-height: 75vh; background: white; border: 1px solid #dcdcdc; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-    table.multi-row-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; }
+    .grid-wrapper {
+        overflow: auto;
+        max-height: 75vh;
+        background: white;
+        border: 1px solid #d4e6f1;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
 
-    /* Intestazioni */
-    th { position: sticky; top: 0; background: #34495e; color: white; padding: 8px 4px; min-width: 45px; text-align: center; border: 1px solid #5d6d7e; z-index: 1000; font-weight: 600; }
-    th.sunday { background: #c0392b; }
+    table.multi-row-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 12px;
+    }
+
+    /* Intestazioni Griglia */
+    th {
+        position: sticky;
+        top: 0;
+        background: #2980b9;
+        color: white;
+        padding: 8px 4px;
+        min-width: 45px;
+        text-align: center;
+        border: 1px solid #1f618d;
+        z-index: 1000;
+        font-weight: 600;
+    }
+
+    th.sunday {
+        background: #1f618d;
+    }
 
     /* COLONNA NOMI (CRUSCOTTO SINISTRO) */
-    td.col-name { 
-        position: sticky; left: 0; z-index: 100; background: #fff; 
-        border-right: 3px solid #95a5a6; border-bottom: 2px solid #2c3e50;
-        vertical-align: top; padding: 10px; width: 260px; box-shadow: 4px 0 5px rgba(0,0,0,0.05);
+    td.col-name {
+        position: sticky;
+        left: 0;
+        z-index: 100;
+        background: #ffffff;
+        border-right: 3px solid #d4e6f1;
+        border-bottom: 2px solid #2980b9;
+        vertical-align: top;
+        padding: 10px;
+        width: 260px;
+        box-shadow: 4px 0 5px rgba(0, 0, 0, 0.03);
     }
-    .dip-name { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
-    .dip-name a { text-decoration: none; color: #2980b9; }
-    .dip-name a:hover { text-decoration: underline; color: #1a5276; }
-    .dip-role { font-size: 11px; color: #7f8c8d; margin-bottom: 10px; display: block; }
-    
+
+    .dip-name {
+        font-size: 15px;
+        font-weight: 700;
+        margin-bottom: 2px;
+    }
+
+    .dip-name a {
+        text-decoration: none;
+        color: #1f618d;
+    }
+
+    .dip-name a:hover {
+        text-decoration: underline;
+        color: #154360;
+    }
+
+    .dip-role {
+        font-size: 11px;
+        color: #7f8c8d;
+        margin-bottom: 10px;
+        display: block;
+    }
+
     /* Box Statistiche */
-    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 8px; }
-    .stat-box { padding: 5px; border-radius: 4px; text-align: center; font-size: 10px; font-weight: bold; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    
-    .stat-lav { background: #3498db; }  
-    .stat-ass { background: #f39c12; }  
-    .stat-not { background: #95a5a6; }  
-    .stat-res-fer { background: #8e44ad; } 
-    .stat-res-rol { background: #c0392b; } 
-    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 5px;
+        margin-top: 8px;
+    }
+
+    .stat-box {
+        padding: 5px;
+        border-radius: 4px;
+        text-align: center;
+        font-size: 10px;
+        font-weight: bold;
+        color: #1f618d;
+        background: #eaf2f8;
+        border: 1px solid #d4e6f1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
     /* Box Costo Cliccabile */
-    .stat-cost { grid-column: span 2; font-size: 11px; padding: 0; }
-    .stat-cost a { display: block; padding: 6px; background: #27ae60; color: white; text-decoration: none; border-radius: 4px; transition: background 0.2s; }
-    .stat-cost a:hover { background: #219150; }
+    .stat-cost {
+        grid-column: span 2;
+        font-size: 11px;
+        padding: 0;
+        border: none;
+        background: transparent;
+    }
+
+    .stat-cost a {
+        display: block;
+        padding: 6px;
+        background: #eaf2f8;
+        color: #1f618d !important;
+        text-decoration: none;
+        border-radius: 4px;
+        border: 1px solid #d4e6f1;
+        font-weight: bold;
+        transition: background 0.2s;
+    }
+
+    .stat-cost a:hover {
+        background: #d4e6f1;
+        color: #154360 !important;
+    }
 
     /* ETICHETTE RIGHE */
-    .row-label { 
-        font-size: 10px; font-weight: bold; text-align: right; padding-right: 8px; 
-        background: #fdfefe; border-right: 1px solid #eee; width: 80px; white-space: nowrap; 
-        position: sticky; left: 260px; z-index: 90; color: #7f8c8d; vertical-align: middle;
-        border-bottom: 1px solid #f0f0f0;
+    .row-label {
+        font-size: 10px;
+        font-weight: bold;
+        text-align: right;
+        padding-right: 8px;
+        background: #fdfefe;
+        border-right: 1px solid #d4e6f1;
+        width: 80px;
+        white-space: nowrap;
+        position: sticky;
+        left: 260px;
+        z-index: 90;
+        color: #2980b9;
+        vertical-align: middle;
+        border-bottom: 1px solid #eaf2f8;
     }
 
     /* CELLE INPUT */
-    td.cell-input { padding: 0; border-right: 1px solid #ecf0f1; border-bottom: 1px solid #ecf0f1; height: 28px; min-width: 45px; position: relative; }
-    
-    /* Colonna Rossa Festiva */
-    td.is-festivo { background-color: #fdedec; } 
-    td.is-festivo input { color: #c0392b; }
-
-    input.grid-input { 
-        width: 100%; height: 100%; border: none; text-align: center; 
-        font-family: 'Consolas', monospace; font-size: 13px; background: transparent; padding: 0; margin: 0;
-        transition: background 0.2s;
+    td.cell-input {
+        padding: 0;
+        border-right: 1px solid #eaf2f8;
+        border-bottom: 1px solid #eaf2f8;
+        height: 28px;
+        min-width: 45px;
+        position: relative;
     }
-    input.grid-input:focus { background: #d6eaf8; outline: 2px solid #3498db; z-index: 10; font-weight: bold; }
-    input.grid-input::placeholder { color: #dcdcdc; font-weight: normal; }
+
+    /* === INSERISCI QUI IL NUOVO CODICE === */
+    .is-riposo-contrattuale {
+        background-color: #fff9c4 !important; /* Giallo pastello */
+    }
+    
+    /* Rende trasparente lo sfondo dell'input per far vedere il giallo della cella */
+    .is-riposo-contrattuale input {
+        background-color: transparent !important;
+    }
+    /* ===================================== */
+
+    /* Colonna Festiva */
+    td.is-festivo {
+        background-color: #f4f9f9;
+    }
+
+    /* Colonna Festiva */
+    td.is-festivo {
+        background-color: #f4f9f9;
+    }
+
+    td.is-festivo input {
+        color: #2980b9;
+    }
+
+    input.grid-input {
+        width: 100%;
+        height: 100%;
+        border: none;
+        text-align: center;
+        font-family: 'Consolas', monospace;
+        font-size: 13px;
+        background: transparent;
+        padding: 0;
+        margin: 0;
+        transition: background 0.2s;
+        color: #333;
+    }
+
+    input.grid-input:focus {
+        background: #d4e6f1;
+        outline: 2px solid #3498db;
+        z-index: 10;
+        font-weight: bold;
+        color: #1f618d;
+    }
+
+    input.grid-input::placeholder {
+        color: #dcdcdc;
+        font-weight: normal;
+    }
 
     /* Stili Righe Specifiche */
-    tr.row-lav input { color: #2c3e50; font-weight: bold; }
-    tr.row-not { background-color: #f4f6f7; }
-    tr.row-ass1-cod { background-color: #fff9c4; border-top: 1px solid #ddd; } 
-    tr.row-ass1-ore { background-color: #ffccbc; }
-    tr.row-ass2-cod { background-color: #fff9c4; border-top: 1px dashed #ccc; } 
-    tr.row-ass2-ore { background-color: #ffccbc; border-bottom: 2px solid #2c3e50; }
+    tr.row-lav input {
+        color: #000;
+        font-weight: bold;
+    }
+
+    /* AZZURRO GHIACCIO PER NOTTURNE (NO DISORDINE CROMATICO) */
+    tr.row-not {
+        background-color: #f4f9fd; 
+    }
+
+    tr.row-ass1-cod {
+        background-color: #ffffff;
+        border-top: 1px solid #d4e6f1;
+    }
+
+    tr.row-ass1-cod .row-label {
+        color: #2980b9;
+    }
+
+    tr.row-ass1-cod input {
+        font-weight: bold;
+        color: #2980b9;
+    }
+
+    tr.row-ass1-ore {
+        background-color: #fdfefe;
+    }
+
+    tr.row-ass1-ore .row-label {
+        color: #1f618d;
+    }
+
+    tr.row-ass1-ore input {
+        font-weight: bold;
+        color: #1f618d;
+    }
+
+    tr.row-ass2-cod {
+        background-color: #ffffff;
+        border-top: 1px dashed #d4e6f1;
+    }
+
+    tr.row-ass2-cod .row-label {
+        color: #2980b9;
+    }
+
+    tr.row-ass2-cod input {
+        font-weight: bold;
+        color: #2980b9;
+    }
+
+    tr.row-ass2-ore {
+        background-color: #fdfefe;
+        border-bottom: 2px solid #2980b9;
+    }
+
+    tr.row-ass2-ore .row-label {
+        color: #1f618d;
+    }
+
+    tr.row-ass2-ore input {
+        font-weight: bold;
+        color: #1f618d;
+    }
 
     /* MODALI */
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 3000; justify-content: center; align-items: center; }
-    .modal-box { background: white; padding: 25px; border-radius: 8px; width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-    .modal-title { margin-top: 0; color: #2c3e50; font-size: 18px; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
-    .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #7f8c8d; }
-    .form-control { width: 100%; padding: 8px; border: 1px solid #bdc3c7; border-radius: 4px; box-sizing: border-box; }
-    .btn-submit { width: 100%; padding: 10px; background: #3498db; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
-    .btn-submit:hover { background: #2980b9; }
-    .close-modal { float: right; cursor: pointer; font-size: 20px; color: #aaa; }
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(31, 97, 141, 0.5);
+        z-index: 3000;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .modal-box {
+        background: white;
+        padding: 25px;
+        border-radius: 8px;
+        width: 400px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        border-top: 4px solid #1f618d;
+    }
+
+    .modal-title {
+        margin-top: 0;
+        color: #1f618d;
+        font-size: 18px;
+        border-bottom: 1px solid #eaf2f8;
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 12px;
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #1f618d;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #d4e6f1;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, .25);
+    }
+
+    .btn-submit {
+        width: 100%;
+        padding: 10px;
+        background: #1f618d;
+        color: white !important;
+        border: none;
+        border-radius: 4px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .btn-submit:hover {
+        background: #154360;
+    }
+
+    .close-modal {
+        float: right;
+        cursor: pointer;
+        font-size: 20px;
+        color: #6c757d;
+    }
 </style>
 {% endblock %}
 
@@ -114,31 +459,41 @@
 
     <datalist id="list-causali">
         {% for c in lista_causali %}
-            <option value="{{ c.codice }}">{{ c.descrizione }}</option>
+        <option value="{{ c.codice }}">{{ c.descrizione }}</option>
         {% endfor %}
     </datalist>
 
     <div class="sticky-header">
         <div class="company-title">
-            <h2><a href="{% url 'admin:anagrafica_azienda_change' azienda.id %}">{{ azienda.ragione_sociale }}</a></h2>
-            <span>Periodo: <strong>{{ periodo.nome }} {{ periodo.a }}</strong></span>
+            <img src="{% static 'img/logo_studio.jpg' %}" alt="Logo Studio"
+                style="height: 45px; margin-right: 15px; border-radius: 4px;">
+            <div>
+                <h2><a href="{% url 'admin:anagrafica_azienda_change' azienda.id %}">{{ azienda.ragione_sociale }}</a></h2>
+                <span>Periodo: <strong>{{ periodo.nome }} {{ periodo.a }}</strong></span>
+            </div>
         </div>
-        
+
         <div class="month-nav">
             <a href="{% url 'dashboard_azienda' azienda.id periodo.prec.a periodo.prec.m %}">❮ Prec</a>
             <span>{{ periodo.nome }}</span>
             <a href="{% url 'dashboard_azienda' azienda.id periodo.succ.a periodo.succ.m %}">Succ ❯</a>
         </div>
 
-        <div style="display:flex; gap:10px;">
-            <button onclick="location.reload()" class="btn-action btn-refresh">🔄 Aggiorna</button>
-            <button onclick="openRangeModal()" class="btn-action btn-range">📅 Inserimento Range</button>
+        <div style="display:flex; gap:8px;">
+            <button onclick="openHelpModal()" class="btn-action">📖 Guida all'Uso</button>
+            <button onclick="location.reload()" class="btn-action" title="Aggiorna la pagina">🔄</button>
+            <button onclick="openNoteModal()" class="btn-action">💬 Note Mensili</button>
+            <button onclick="openRangeModal()" class="btn-action">📅 Inserimento Range</button>
             <a href="{% url 'export_csv' azienda.id periodo.a periodo.m %}" class="btn-action">⬇️ Export Ranocchi</a>
-            <a href="{% url 'report_costi_azienda' azienda.id periodo.a periodo.m %}" target="_blank" class="btn-action" style="background-color: #8e44ad;">📊 Report Costi</a>
+            <a href="{% url 'report_costi_azienda' azienda.id periodo.a periodo.m %}" target="_blank" class="btn-action">📊 Report Costi</a>
             
-            <button onclick="openResetModal()" class="btn-action" style="background-color: #c0392b;">🗑️ Azzera Presenze</button>
-            
-            <span id="statusIcon" style="display:none; color:#e67e22; font-weight:bold; align-self:center;">💾 Saving...</span>
+            <a href="{% url 'lista_dipendenti' azienda.id %}" class="btn-action">
+                <i class="bi bi-people"></i> 👥 La Mia Banca Dati
+            </a>
+
+            <button onclick="openResetModal()" class="btn-action" title="Azzera Presenze">🗑️ Azzera</button>
+
+            <span id="statusIcon" style="display:none; color:#1f618d; font-weight:bold; align-self:center;">💾 Salvataggio...</span>
         </div>
     </div>
 
@@ -149,129 +504,240 @@
                     <th style="left:0; z-index:1100; min-width:260px; text-align:left; padding-left:15px;">DIPENDENTE / STATISTICHE</th>
                     <th style="left:260px; z-index:1100; min-width:80px;">VOCE</th>
                     {% for g in giorni_mese %}
-                        <th class="{% if g.is_festivo %}sunday{% endif %}">
-                            {{ g.giorno }}<br>{{ g.weekday }}
-                        </th>
+                    <th class="{% if g.is_festivo %}sunday{% endif %}">
+                        {{ g.giorno }}<br>{{ g.weekday }}
+                    </th>
                     {% endfor %}
                 </tr>
             </thead>
             <tbody>
-                {% for row in dipendenti %}
-                    <tr class="row-lav">
-                        <td class="col-name" rowspan="6">
-                            <div class="dip-name">
-                                <a href="{% url 'admin:anagrafica_dipendente_change' row.obj.id %}">{{ row.obj.cognome_nome }}</a>
-                            </div>
-                            <span class="dip-role">{{ row.obj.qualifica|default:"Impiegato" }}</span>
-                            
-                            <div class="stats-grid">
-                                <div class="stat-box stat-lav" title="Ore Lavorate">LAV: {{ row.stats.ore_lav|floatformat:1 }}</div>
-                                <div class="stat-box stat-ass" title="Ore Assenza">ASS: {{ row.stats.ore_ass|floatformat:1 }}</div>
-                                
-                                <div class="stat-box stat-res-fer" title="Ferie Residue">FER: {{ row.stats.ferie_res|floatformat:1 }}</div>
-                                <div class="stat-box stat-res-rol" title="Permessi ROL Residui">ROL: {{ row.stats.rol_res|floatformat:1 }}</div>
-                                
-                                <div class="stat-box stat-not" title="Ore Notturne">NOT: {{ row.stats.ore_not|floatformat:1 }}</div>
-                                
-                                <div class="stat-box stat-cost">
-                                    <a href="{% url 'simulazione_busta_paga' row.obj.id periodo.a periodo.m %}" target="_blank" title="Clicca per simulazione cedolino">
-                                        COSTO: € {{ row.stats.costo|floatformat:0 }}
-                                    </a>
-                                </div>
-                            </div>
-                        </td>
-                        
-                        <td class="row-label">ORDINARIE</td>
-                        {% for cell in row.rows.lav %}
-                            <td class="cell-input {% if cell.is_festivo %}is-festivo{% endif %}">
-                                <input class="grid-input input-lav" type="number" step="0.5" 
-                                       value="{{ cell.val }}"
-                                       data-dip="{{ row.obj.id }}" data-date="{{ cell.data_iso }}"
-                                       onchange="saveData(this, 'lav')">
-                            </td>
-                        {% endfor %}
-                    </tr>
+    {% for row in dipendenti %}
+    
+    <tr class="row-lav">
+        
+        <td class="col-name" rowspan="6">
+            <div class="dip-name">
+                <a href="{% url 'admin:anagrafica_dipendente_change' row.obj.id %}">{{ row.obj.cognome_nome }}</a>
+            </div>
+            <span class="dip-role">{{ row.obj.qualifica|default:"Impiegato" }}</span>
+            
+            <div style="margin-top: 6px; margin-bottom: 8px;">
+                <a href="{% url 'forza_ore_range' row.obj.id %}" style="display: inline-block; background: #1f618d; color: white; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; text-decoration: none; border: 1px solid #154360; transition: background 0.2s;" onmouseover="this.style.background='#154360'" onmouseout="this.style.background='#1f618d'">
+                    🔁 Turni Avanzati
+                </a>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-box" title="Ore Lavorate">LAV: {{ row.stats.ore_lav|floatformat:1 }}</div>
+                <div class="stat-box" title="Ore Assenza">ASS: {{ row.stats.ore_ass|floatformat:1 }}</div>
+                <div class="stat-box" title="Ferie Residue">FER: {{ row.stats.ferie_res|floatformat:1 }}</div>
+                <div class="stat-box" title="Permessi ROL Residui">ROL: {{ row.stats.rol_res|floatformat:1 }}</div>
+                <div class="stat-box" title="Ore Notturne">NOT: {{ row.stats.ore_not|floatformat:1 }}</div>
 
-                    <tr class="row-not">
-                        <td class="row-label">NOTTURNE</td>
-                        {% for cell in row.rows.not %}
-                            <td class="cell-input {% if cell.is_festivo %}is-festivo{% endif %}">
-                                <input class="grid-input" type="number" step="0.5" 
-                                       value="{{ cell.val }}"
-                                       data-dip="{{ row.obj.id }}" data-date="{{ cell.data_iso }}"
-                                       onchange="saveData(this, 'not')">
-                            </td>
-                        {% endfor %}
-                    </tr>
+                <div class="stat-box stat-cost">
+                    <a href="{% url 'simulazione_busta_paga' row.obj.id periodo.a periodo.m %}" target="_blank" title="Clicca per simulazione cedolino">
+                        COSTO: € {{ row.stats.costo|floatformat:0 }}
+                    </a>
+                </div>
+            </div>
+        </td>
+        <td class="row-label">ORDINARIE</td>
+        {% for cell in row.rows.lav %}
+        <td class="cell-input {% if cell.is_festivo %}is-festivo{% endif %} {% if cell.is_riposo %}is-riposo-contrattuale{% endif %}">
+            <input class="grid-input input-lav" 
+                   type="number" 
+                   step="0.5" 
+                   value="{% if cell.val > 0 %}{{ cell.val|stringformat:'g' }}{% endif %}" 
+                   placeholder=""
+                   data-dip="{{ row.obj.id }}" 
+                   data-date="{{ cell.data_iso }}" 
+                   onchange="saveData(this, 'lav')">
+        </td>
+        {% endfor %}
+    </tr>
 
-                    <tr class="row-ass1-cod">
-                        <td class="row-label" style="color:#f39c12;">ASSENZA 1</td>
-                        {% for cell in row.rows.ass1_cod %}
-                            <td class="cell-input {% if cell.is_festivo %}is-festivo{% endif %}">
-                                <input class="grid-input" type="text" list="list-causali" 
-                                       value="{{ cell.val }}" style="font-weight:bold; color:#d35400;"
-                                       data-dip="{{ row.obj.id }}" data-date="{{ cell.data_iso }}"
-                                       onchange="saveData(this, 'ass1_cod')">
-                            </td>
-                        {% endfor %}
-                    </tr>
+    <tr class="row-not">
+        <td class="row-label">NOTTURNE</td>
+        {% for cell in row.rows.not %}
+        <td class="cell-input {% if cell.is_festivo %}is-festivo{% endif %} {% if cell.is_riposo %}is-riposo-contrattuale{% endif %}">
+            <input class="grid-input" 
+                   type="number" 
+                   step="0.5" 
+                   value="{% if cell.val > 0 %}{{ cell.val|stringformat:'g' }}{% endif %}" 
+                   placeholder=""
+                   data-dip="{{ row.obj.id }}" 
+                   data-date="{{ cell.data_iso }}" 
+                   onchange="saveData(this, 'not')">
+        </td>
+        {% endfor %}
+    </tr>
 
-                    <tr class="row-ass1-ore">
-                        <td class="row-label" style="color:#e64a19;">ORE ASS. 1</td>
-                        {% for cell in row.rows.ass1_ore %}
-                            <td class="cell-input {% if cell.is_festivo %}is-festivo{% endif %}">
-                                <input class="grid-input input-ass" type="number" step="0.5" 
-                                       value="{{ cell.val }}" style="color:#c0392b; font-weight:bold;"
-                                       data-dip="{{ row.obj.id }}" data-date="{{ cell.data_iso }}"
-                                       onchange="saveData(this, 'ass1_ore')">
-                            </td>
-                        {% endfor %}
-                    </tr>
+    <tr class="row-ass1-cod">
+        <td class="row-label">ASSENZA 1</td>
+        {% for cell in row.rows.ass1_cod %}
+        <td class="cell-input {% if cell.is_festivo %}is-festivo{% endif %} {% if cell.is_riposo %}is-riposo-contrattuale{% endif %}">
+            <input class="grid-input" 
+                   type="text" 
+                   list="list-causali" 
+                   value="{% if cell.val %}{{ cell.val }}{% endif %}" 
+                   placeholder=""
+                   data-dip="{{ row.obj.id }}" 
+                   data-date="{{ cell.data_iso }}" 
+                   onchange="saveData(this, 'ass1_cod')">
+        </td>
+        {% endfor %}
+    </tr>
 
-                    <tr class="row-ass2-cod">
-                        <td class="row-label" style="color:#f39c12;">ASSENZA 2</td>
-                        {% for cell in row.rows.ass2_cod %}
-                            <td class="cell-input {% if cell.is_festivo %}is-festivo{% endif %}">
-                                <input class="grid-input" type="text" list="list-causali" 
-                                       value="{{ cell.val }}" style="font-weight:bold; color:#d35400;"
-                                       data-dip="{{ row.obj.id }}" data-date="{{ cell.data_iso }}"
-                                       onchange="saveData(this, 'ass2_cod')">
-                            </td>
-                        {% endfor %}
-                    </tr>
+    <tr class="row-ass1-ore">
+        <td class="row-label">ORE ASS. 1</td>
+        {% for cell in row.rows.ass1_ore %}
+        <td class="cell-input {% if cell.is_festivo %}is-festivo{% endif %} {% if cell.is_riposo %}is-riposo-contrattuale{% endif %}">
+            <input class="grid-input input-ass" 
+                   type="number" 
+                   step="0.5" 
+                   value="{% if cell.val > 0 %}{{ cell.val|stringformat:'g' }}{% endif %}" 
+                   placeholder=""
+                   data-dip="{{ row.obj.id }}" 
+                   data-date="{{ cell.data_iso }}" 
+                   onchange="saveData(this, 'ass1_ore')">
+        </td>
+        {% endfor %}
+    </tr>
 
-                    <tr class="row-ass2-ore">
-                        <td class="row-label" style="color:#e64a19;">ORE ASS. 2</td>
-                        {% for cell in row.rows.ass2_ore %}
-                            <td class="cell-input {% if cell.is_festivo %}is-festivo{% endif %}">
-                                <input class="grid-input input-ass" type="number" step="0.5" 
-                                       value="{{ cell.val }}" style="color:#c0392b; font-weight:bold;"
-                                       data-dip="{{ row.obj.id }}" data-date="{{ cell.data_iso }}"
-                                       onchange="saveData(this, 'ass2_ore')">
-                            </td>
-                        {% endfor %}
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <tr class="row-ass2-cod">
+        <td class="row-label">ASSENZA 2</td>
+        {% for cell in row.rows.ass2_cod %}
+        <td class="cell-input {% if cell.is_festivo %}is-festivo{% endif %} {% if cell.is_riposo %}is-riposo-contrattuale{% endif %}">
+            <input class="grid-input" 
+                   type="text" 
+                   list="list-causali" 
+                   value="{% if cell.val %}{{ cell.val }}{% endif %}" 
+                   placeholder=""
+                   data-dip="{{ row.obj.id }}" 
+                   data-date="{{ cell.data_iso }}" 
+                   onchange="saveData(this, 'ass2_cod')">
+        </td>
+        {% endfor %}
+    </tr>
+
+    <tr class="row-ass2-ore">
+        <td class="row-label">ORE ASS. 2</td>
+        {% for cell in row.rows.ass2_ore %}
+        <td class="cell-input {% if cell.is_festivo %}is-festivo{% endif %} {% if cell.is_riposo %}is-riposo-contrattuale{% endif %}">
+            <input class="grid-input input-ass" 
+                   type="number" 
+                   step="0.5" 
+                   value="{% if cell.val > 0 %}{{ cell.val|stringformat:'g' }}{% endif %}" 
+                   placeholder=""
+                   data-dip="{{ row.obj.id }}" 
+                   data-date="{{ cell.data_iso }}" 
+                   onchange="saveData(this, 'ass2_ore')">
+        </td>
+        {% endfor %}
+    </tr>
+    
+    {% endfor %}
+</tbody>
+    </div>
+</div>
+
+<div id="helpModal" class="modal-overlay">
+    <div class="modal-box" style="width: 750px; max-height: 85vh; overflow-y: auto; border-radius: 12px; border-top: 6px solid #2980b9; box-shadow: 0 15px 35px rgba(0,0,0,0.25); padding: 30px; background-color: #ffffff;">
+        <span class="close-modal" onclick="closeHelpModal()" style="font-size: 32px; color: #7f8c8d; font-weight: bold; cursor: pointer;">&times;</span>
+        
+        <h3 class="modal-title" style="color: #2c3e50; font-weight: 900; font-size: 24px; margin-top: 0; margin-bottom: 25px; display: flex; align-items: center; border-bottom: 2px solid #ecf0f1; padding-bottom: 15px;">
+            <span style="font-size: 32px; margin-right: 12px;">📖</span> GUIDA RAPIDA ALLA GESTIONE PRESENZE
+        </h3>
+        
+        <div style="font-size: 15px; line-height: 1.6; color: #34495e;">
+            <p style="font-size: 17px; margin-bottom: 25px; font-weight: 500;">Benvenuto nel portale presenze di <strong style="color: #2980b9; font-size: 19px;">Studio 3 Srl</strong>. Ecco come utilizzare la piattaforma in 4 semplici passi:</p>
+            
+            <div style="background-color: #f4f9fd; padding: 18px 20px; border-left: 5px solid #2980b9; border-radius: 0 8px 8px 0; margin-bottom: 15px;">
+                <h4 style="color:#2980b9; margin-top: 0; margin-bottom: 8px; font-weight: 800; font-size: 16px;">1. 🗓️ Il Tabellone Mensile</h4>
+                <ul style="margin: 0; padding-left: 20px;">
+                    <li style="margin-bottom: 6px;"><strong style="color:#2c3e50;">Tutto in automatico:</strong> Il sistema ha già precompilato le ore ordinarie. Non devi scriverle!</li>
+                    <li><strong style="color:#2c3e50;">Assenze Parziali:</strong> Inserendo una causale, il sistema azzera le ore lavorate. Se il permesso è solo di 2 ore, scrivi 2 in "ORE ASS" e il sistema calcolerà le ore restanti in automatico.</li>
+                </ul>
+            </div>
+            
+            <div style="background-color: #f9f0ff; padding: 18px 20px; border-left: 5px solid #8e44ad; border-radius: 0 8px 8px 0; margin-bottom: 15px;">
+                <h4 style="color:#8e44ad; margin-top: 0; margin-bottom: 5px; font-weight: 800; font-size: 16px;">2. 🔄 Inserimento Range (Turni e Assenze)</h4>
+                <p style="margin: 0; font-weight: 500;">Usa il bottone in alto per inserire ferie, malattie o forzare giorni di riposo per più giorni consecutivi in un solo clic.</p>
+            </div>
+            
+            <div style="background-color: #fffaf0; padding: 18px 20px; border-left: 5px solid #d35400; border-radius: 0 8px 8px 0; margin-bottom: 15px;">
+                <h4 style="color:#d35400; margin-top: 0; margin-bottom: 5px; font-weight: 800; font-size: 16px;">3. 💬 Note Mensili (Bacheca)</h4>
+                <p style="margin: 0; font-weight: 500;">Scrivi lì rimborsi, premi o trasferte. Il testo sarà stampato nel Report Costi mensile.</p>
+            </div>
+            
+            <div style="background-color: #fdf2e9; padding: 18px 20px; border-left: 5px solid #c0392b; border-radius: 0 8px 8px 0;">
+                <h4 style="color:#c0392b; margin-top: 0; margin-bottom: 5px; font-weight: 800; font-size: 16px;">4. 📊 Cruscotti Costi e Simulazioni</h4>
+                <p style="margin: 0; font-weight: 500;"><strong style="color:#c0392b;">⚠️ ATTENZIONE:</strong> I cruscotti sono strumenti di <em>Controllo di Gestione</em> per monitorare il Costo Aziendale. Il Netto in tasca mostrato è solo una simulazione. Per il calcolo ufficiale fa fede la busta paga dello Studio.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="noteModal" class="modal-overlay"> 
+    <div class="modal-box" style="width: 850px; max-height: 90vh; overflow-y: auto; background-color: #ffcc00; border: 6px solid #000000; border-radius: 15px; padding: 35px; box-shadow: 0px 20px 40px rgba(0,0,0,0.6);">
+        
+        <span class="close-modal" onclick="closeNoteModal()" style="color: #000000; font-size: 40px; font-weight: 900; opacity: 1; cursor: pointer; float: right; margin-top: -10px;">&times;</span>
+        
+        <h3 class="modal-title" style="color: #000000; font-weight: 900; font-size: 32px; border-bottom: 5px solid #000000; padding-bottom: 15px; margin-top: 0; text-transform: uppercase; letter-spacing: 1px;">
+            <span style="font-size: 36px; margin-right: 15px;">💬</span> BACHECA NOTE MENSILI
+        </h3>
+        
+        <div style="font-size: 20px; font-weight: 900; line-height: 1.4; color: #000000; margin-bottom: 25px; margin-top: 20px;">
+            <p style="margin: 0;">Inserisci qui rimborsi, trasferte o premi per il mese corrente.<br>
+            <span style="font-size: 16px; font-weight: 700;">Saranno visibili sullo storico e sul Report Costi.</span></p>
+        </div>
+        
+        <form method="POST">
+            {% csrf_token %}
+            <textarea name="testo_nota" 
+                      rows="8" 
+                      style="width: 100%; padding: 25px; font-size: 22px; font-weight: 900; color: #000000; background-color: #fffde7; border: 5px solid #000000; border-radius: 12px; resize: vertical; box-sizing: border-box; font-family: inherit;" 
+                      placeholder="Scrivi qui i rimborsi o i premi (es. +50€ Trasferta Mario)...">{% if nota_mese %}{{ nota_mese.testo }}{% endif %}</textarea>
+            
+            <div style="text-align: right; margin-top: 30px;">
+                <button type="submit" style="background-color: #000000; color: #ffcc00; font-weight: 900; font-size: 22px; padding: 15px 45px; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; transition: transform 0.2s; box-shadow: 0px 6px 0px #333333;" onmouseover="this.style.transform='translateY(-3px)';" onmouseout="this.style.transform='translateY(0)';">
+                    💾 SALVA NOTE
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
 <div id="rangeModal" class="modal-overlay">
     <div class="modal-box">
         <span class="close-modal" onclick="closeRangeModal()">&times;</span>
-        <h3 class="modal-title">Inserimento Assenza Periodica</h3>
-        
+        <h3 class="modal-title">Inserimento Range Massivo</h3>
+
+        <div class="form-group">
+            <label>Tipo Inserimento:</label>
+            <select id="rangeTipo" class="form-control" onchange="toggleRangeFields()">
+                <option value="ass">Assenza / Permesso</option>
+                <option value="lav">Forza Ore Lavorate (Ordinario/Riposo)</option>
+                <option value="not">Forza Ore Notturne</option>
+            </select>
+        </div>
+
         <div class="form-group">
             <label>Dipendente:</label>
             <select id="rangeDip" class="form-control">
                 <option value="all">-- Tutti i Dipendenti --</option>
                 {% for row in dipendenti %}
-                    <option value="{{ row.obj.id }}">{{ row.obj.cognome_nome }}</option>
+                <option value="{{ row.obj.id }}">{{ row.obj.cognome_nome }}</option>
                 {% endfor %}
             </select>
         </div>
-        
+
+        <div class="form-group" style="background: #ebf5fb; padding: 10px; border-radius: 5px;">
+            <label style="color: #2980b9;">Elenco Giorni Specifici (es: 1,4,8-12,15):</label>
+            <input type="text" id="rangeGiorniSpecifici" class="form-control" placeholder="Lascia vuoto per usare il range di date">
+            <small style="color: #7f8c8d;">Se compilato, le date sotto verranno ignorate.</small>
+        </div>
+
         <div style="display:flex; gap:10px;">
             <div class="form-group" style="flex:1;">
                 <label>Dal:</label>
@@ -283,13 +749,13 @@
             </div>
         </div>
 
-        <div class="form-group">
-            <label>Causale:</label>
+        <div class="form-group" id="wrapRangeCausale">
+            <label>Causale Assenza:</label>
             <input type="text" list="list-causali" id="rangeCausale" class="form-control" placeholder="Es. FER">
         </div>
 
         <div class="form-group">
-            <label>Ore Giornaliere (Lascia vuoto per Totali):</label>
+            <label id="lblRangeOre">Ore Giornaliere (Lascia vuoto per intera giornata):</label>
             <input type="number" id="rangeOre" class="form-control" placeholder="Es. 8">
         </div>
 
@@ -298,25 +764,25 @@
 </div>
 
 <div id="resetModal" class="modal-overlay">
-    <div class="modal-box" style="border-top: 5px solid #c0392b;">
+    <div class="modal-box">
         <span class="close-modal" onclick="closeResetModal()">&times;</span>
-        <h3 class="modal-title" style="color: #c0392b;">⚠️ Azzeramento Presenze</h3>
+        <h3 class="modal-title">Azzeramento Presenze</h3>
         <p style="font-size: 13px; color: #555; margin-bottom: 20px;">
-            Scegli il dipendente di cui vuoi cancellare le assenze inserite. <br>
-            <strong>Nota:</strong> L'operazione riporterà la griglia all'orario lavorativo standard (senza ferie/permessi).
+            Scegli il dipendente di cui vuoi cancellare le presenze modificate. <br>
+            <strong>Nota:</strong> L'operazione riporterà la griglia all'orario lavorativo standard.
         </p>
-        
+
         <div class="form-group">
             <label>Dipendente da Azzerare:</label>
             <select id="resetDip" class="form-control">
-                <option value="all" style="font-weight: bold; color: #c0392b;">-- TUTTI I DIPENDENTI --</option>
+                <option value="all" style="font-weight: bold; color: #1f618d;">-- TUTTI I DIPENDENTI --</option>
                 {% for row in dipendenti %}
-                    <option value="{{ row.obj.id }}">{{ row.obj.cognome_nome }}</option>
+                <option value="{{ row.obj.id }}">{{ row.obj.cognome_nome }}</option>
                 {% endfor %}
             </select>
         </div>
 
-        <button onclick="applyReset()" class="btn-submit" style="background-color: #c0392b; margin-top: 10px;">🗑️ CONFERMA AZZERAMENTO</button>
+        <button onclick="applyReset()" class="btn-submit">CONFERMA AZZERAMENTO</button>
     </div>
 </div>
 
@@ -328,56 +794,101 @@
         let dateIso = input.dataset.date;
 
         document.getElementById('statusIcon').style.display = 'inline';
-        input.style.backgroundColor = '#fffacd';
+        input.style.backgroundColor = '#eaf2f8';
 
         fetch("{% url 'salva_presenze_json' %}", {
             method: "POST",
             headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
             body: JSON.stringify({ modifiche: [{ dip_id: dipId, data: dateIso, campo: campo, valore: val }] })
         })
-        .then(r => r.json())
-        .then(d => {
-            if(d.status === 'ok') {
-                input.style.backgroundColor = '';
-                setTimeout(() => { document.getElementById('statusIcon').style.display = 'none'; }, 500);
-                
-                if(campo.includes('cod') || campo.includes('ore')) {
-                    location.reload();
-                }
+            .then(r => r.json())
+            .then(d => {
+                if (d.status === 'ok') {
+                    input.style.backgroundColor = '';
+                    setTimeout(() => { document.getElementById('statusIcon').style.display = 'none'; }, 500);
 
-            } else {
-                alert("Errore: " + d.msg);
-                input.style.backgroundColor = '#ffcccc';
-            }
-        });
+                    if (campo.includes('cod') || campo.includes('ore')) {
+                        location.reload();
+                    }
+
+                } else {
+                    alert("Errore: " + d.msg);
+                    input.style.backgroundColor = '#ffcccc';
+                }
+            });
     }
+
+    // --- GESTIONE MODALI EXTRA ---
+    function openHelpModal() { document.getElementById('helpModal').style.display = 'flex'; }
+    function closeHelpModal() { document.getElementById('helpModal').style.display = 'none'; }
+    
+    function openNoteModal() { document.getElementById('noteModal').style.display = 'flex'; }
+    function closeNoteModal() { document.getElementById('noteModal').style.display = 'none'; }
 
     // --- GESTIONE MODALE RANGE ---
     function openRangeModal() { document.getElementById('rangeModal').style.display = 'flex'; }
     function closeRangeModal() { document.getElementById('rangeModal').style.display = 'none'; }
 
+    function toggleRangeFields() {
+        let val = document.getElementById('rangeTipo').value;
+        if (val === 'ass') {
+            document.getElementById('wrapRangeCausale').style.display = 'block';
+            document.getElementById('lblRangeOre').innerText = 'Ore Giornaliere (Lascia vuoto per intera giornata):';
+        } else {
+            document.getElementById('wrapRangeCausale').style.display = 'none';
+            document.getElementById('lblRangeOre').innerText = 'Ore da inserire (Usa 0 per forzare riposo):';
+        }
+    }
+
+    // MODIFICA: Funzione applyRange potenziata per Elenco Giorni e Sottrazione Automatica
     function applyRange() {
         let dipId = document.getElementById('rangeDip').value;
-        let startVal = document.getElementById('rangeStart').value;
-        let endVal = document.getElementById('rangeEnd').value;
-        let causale = document.getElementById('rangeCausale').value;
+        let tipo = document.getElementById('rangeTipo').value;
         let ore = document.getElementById('rangeOre').value;
+        let causale = document.getElementById('rangeCausale').value;
+        
+        let inputGiorni = document.getElementById('rangeGiorniSpecifici').value; 
+        let giorniDaElaborare = [];
 
-        if(!causale) { alert("Inserisci una causale!"); return; }
+        // 1. Parsing dell'elenco tipo stampa
+        if (inputGiorni.trim() !== "") {
+            let parti = inputGiorni.split(',');
+            parti.forEach(p => {
+                p = p.trim();
+                if (p.includes('-')) {
+                    let raggio = p.split('-');
+                    let start = parseInt(raggio[0]);
+                    let end = parseInt(raggio[1]);
+                    for (let i = start; i <= end; i++) {
+                        if(!isNaN(i)) giorniDaElaborare.push(i);
+                    }
+                } else {
+                    let g = parseInt(p);
+                    if (!isNaN(g)) giorniDaElaborare.push(g);
+                }
+            });
+        } else {
+            // Se vuoto, usa il range classico delle date
+            let startVal = document.getElementById('rangeStart').value;
+            let endVal = document.getElementById('rangeEnd').value;
+            let cur = new Date(startVal);
+            let end = new Date(endVal);
+            while (cur <= end) {
+                giorniDaElaborare.push(cur.getDate());
+                cur.setDate(cur.getDate() + 1);
+            }
+        }
 
         let modifiche = [];
-        let cur = new Date(startVal);
-        let end = new Date(endVal);
-        
-        while(cur <= end) {
-            let year = cur.getFullYear();
-            let month = String(cur.getMonth() + 1).padStart(2, '0');
-            let day = String(cur.getDate()).padStart(2, '0');
-            let isoDate = `${year}-${month}-${day}`;
+        let anno = {{ periodo.a }};
+        let mese = {{ periodo.m }};
+
+        giorniDaElaborare.forEach(g => {
+            let isoDate = `${anno}-${String(mese).padStart(2, '0')}-${String(g).padStart(2, '0')}`;
             
             let targetDips = [];
-            if(dipId === 'all') {
-                document.querySelectorAll('.input-lav[data-date="'+isoDate+'"]').forEach(el => {
+            if (dipId === 'all') {
+                document.querySelectorAll('.input-lav[data-date="' + isoDate + '"]').forEach(el => {
                     targetDips.push(el.dataset.dip);
                 });
             } else {
@@ -385,26 +896,41 @@
             }
 
             targetDips.forEach(id => {
-                modifiche.push({ dip_id: id, data: isoDate, campo: 'ass1_cod', valore: causale });
-                if(ore) modifiche.push({ dip_id: id, data: isoDate, campo: 'ass1_ore', valore: ore });
+                if (tipo === 'ass') {
+                    modifiche.push({ dip_id: id, data: isoDate, campo: 'ass1_cod', valore: causale });
+                    modifiche.push({ dip_id: id, data: isoDate, campo: 'ass1_ore', valore: ore });
+                } else if (tipo === 'lav') {
+                    modifiche.push({ dip_id: id, data: isoDate, campo: 'lav', valore: ore });
+                    // Se sto mettendo ore lavorate (es. turno), azzero assenze precedenti in quel giorno
+                    if (parseFloat(ore) > 0) {
+                        modifiche.push({ dip_id: id, data: isoDate, campo: 'ass1_cod', valore: "" });
+                        modifiche.push({ dip_id: id, data: isoDate, campo: 'ass1_ore', valore: "" });
+                    }
+                } else if (tipo === 'not') {
+                    modifiche.push({ dip_id: id, data: isoDate, campo: 'not', valore: ore });
+                }
             });
-            
-            cur.setDate(cur.getDate() + 1);
-        }
+        });
+
+        if (modifiche.length === 0) return;
+
+        document.getElementById('statusIcon').style.display = 'inline';
+        document.getElementById('statusIcon').innerText = '💾 Elaborazione elenco...';
 
         fetch("{% url 'salva_presenze_json' %}", {
             method: "POST",
             headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
             body: JSON.stringify({ modifiche: modifiche })
         })
-        .then(r => r.json())
-        .then(d => {
-            if(d.status === 'ok') {
-                location.reload(); 
-            } else {
-                alert("Errore massivo: " + d.msg);
-            }
-        });
+            .then(r => r.json())
+            .then(d => {
+                if (d.status === 'ok') {
+                    location.reload();
+                } else {
+                    alert("Errore massivo: " + d.msg);
+                    document.getElementById('statusIcon').style.display = 'none';
+                }
+            });
     }
 
     // --- GESTIONE MODALE AZZERAMENTO ---
@@ -415,32 +941,32 @@
         let dipId = document.getElementById('resetDip').value;
         let dipNome = document.getElementById('resetDip').options[document.getElementById('resetDip').selectedIndex].text;
 
-        if(!confirm(`Sei sicuro di voler azzerare le presenze per:\n${dipNome}?\nL'operazione è irreversibile.`)) {
+        if (!confirm(`Sei sicuro di voler azzerare le presenze per:\n${dipNome}?\nL'operazione è irreversibile.`)) {
             return;
         }
 
         document.getElementById('statusIcon').style.display = 'inline';
-        document.getElementById('statusIcon').innerText = '🗑️ Cancellazione in corso...';
+        document.getElementById('statusIcon').innerText = 'Cancellazione in corso...';
         closeResetModal();
 
         fetch("{% url 'azzera_presenze_json' %}", {
             method: "POST",
             headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
-            body: JSON.stringify({ 
-                dip_id: dipId, 
-                anno: {{ periodo.a }}, 
-                mese: {{ periodo.m }}, 
+            body: JSON.stringify({
+                dip_id: dipId,
+                anno: {{ periodo.a }},
+                mese: {{ periodo.m }},
                 azienda_id: {{ azienda.id }} 
             })
         })
         .then(r => r.json())
         .then(d => {
-            if(d.status === 'ok') {
-                location.reload(); 
+            if (d.status === 'ok') {
+                location.reload();
             } else {
                 alert("Errore durante l'azzeramento: " + d.msg);
                 document.getElementById('statusIcon').style.display = 'none';
-                document.getElementById('statusIcon').innerText = '💾 Saving...'; 
+                document.getElementById('statusIcon').innerText = '💾 Salvataggio...';
             }
         });
     }

@@ -1,0 +1,121 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Forza Turni - {{ dipendente.cognome_nome }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+
+        .card-turno {
+            max-width: 600px;
+            margin: 0 auto;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card card-turno">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">⚙️ Gestione Turni Avanzata: {{ dipendente.cognome_nome }}</h5>
+        </div>
+        <div class="card-body">
+
+            <form method="POST" action="{% url 'forza_ore_range' dipendente.id %}">
+                {% csrf_token %}
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Dal giorno</label>
+                        <input type="date" name="data_inizio" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Al giorno</label>
+                        <input type="date" name="data_fine" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-primary">Tipo di Modifica Turno</label>
+                    <select name="tipo_operazione" id="tipoOperazione" class="form-select" onchange="toggleSections()">
+                        <option value="swap">1. Scambio Giorni (Settimana Standard)</option>
+                        <option value="ciclo">2. Generatore Ciclo Continuo (Es. 3+1, 4+2)</option>
+                    </select>
+                </div>
+
+                <div id="sectionSwap" class="p-3 border rounded bg-white mb-3">
+                    <h6 class="text-secondary">Scambio Riposi</h6>
+                    <p class="small text-muted mb-2">Seleziona <strong>SOLO i giorni in cui il dipendente NON
+                            lavorerà</strong> in questo range. Il sistema verserà in automatico le ore recuperate nei
+                        giorni liberi originali del contratto.</p>
+
+                    <div class="d-flex flex-wrap gap-3">
+                        <div class="form-check"><input class="form-check-input" type="checkbox" name="giorni_riposo"
+                                value="0" id="g0"><label class="form-check-label" for="g0">Lunedì</label></div>
+                        <div class="form-check"><input class="form-check-input" type="checkbox" name="giorni_riposo"
+                                value="1" id="g1"><label class="form-check-label" for="g1">Martedì</label></div>
+                        <div class="form-check"><input class="form-check-input" type="checkbox" name="giorni_riposo"
+                                value="2" id="g2"><label class="form-check-label" for="g2">Mercoledì</label></div>
+                        <div class="form-check"><input class="form-check-input" type="checkbox" name="giorni_riposo"
+                                value="3" id="g3"><label class="form-check-label" for="g3">Giovedì</label></div>
+                        <div class="form-check"><input class="form-check-input" type="checkbox" name="giorni_riposo"
+                                value="4" id="g4"><label class="form-check-label" for="g4">Venerdì</label></div>
+                        <div class="form-check"><input class="form-check-input" type="checkbox" name="giorni_riposo"
+                                value="5" id="g5"><label class="form-check-label" for="g5">Sabato</label></div>
+                        <div class="form-check"><input class="form-check-input" type="checkbox" name="giorni_riposo"
+                                value="6" id="g6"><label class="form-check-label" for="g6">Domenica</label></div>
+                    </div>
+                </div>
+
+                <div id="sectionCiclo" class="section-hidden p-3 border rounded bg-white mb-3">
+                    <h6 class="text-secondary">Generatore Ciclo Continuo</h6>
+                    <p class="small text-muted mb-2">Imposta la cadenza. Il sistema spalmerà le ore automaticamente
+                        dalla data di inizio alla data di fine.</p>
+                    <div class="row">
+                        <div class="col-6">
+                            <label class="form-label small">Giorni Lavorativi Consecutivi</label>
+                            <input type="number" name="giorni_lavoro" class="form-control" value="3" min="1" max="15">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">Giorni Riposo Consecutivi</label>
+                            <input type="number" name="giorni_riposo_ciclo" class="form-control" value="1" min="1"
+                                max="5">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <button type="button" class="btn btn-secondary" onclick="window.history.back()">Annulla</button>
+                    <button type="submit" class="btn btn-success">Genera Turno</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function toggleSections() {
+            var tipo = document.getElementById("tipoOperazione").value;
+            if (tipo === "swap") {
+                document.getElementById("sectionSwap").classList.remove("section-hidden");
+                document.getElementById("sectionCiclo").classList.add("section-hidden");
+            } else {
+                document.getElementById("sectionSwap").classList.add("section-hidden");
+                document.getElementById("sectionCiclo").classList.remove("section-hidden");
+            }
+        }
+    </script>
+
+</body>
+
+</html>

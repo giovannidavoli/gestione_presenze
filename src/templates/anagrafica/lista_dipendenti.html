@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banca Dati - {{ azienda.ragione_sociale }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Banca Dati Dipendenti: <span class="text-primary">{{ azienda.ragione_sociale }}</span></h2>
+            <div>
+                <<a href="{% url 'dashboard_azienda' azienda.id anno_corrente mese_corrente %}" class="btn btn-outline-secondary me-2">Torna alle Presenze</a>
+                <a href="{% url 'nuovo_dipendente' azienda.id %}" class="btn btn-success">+ Nuovo Dipendente</a>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <table class="table table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Nome e Cognome</th>
+                            <th>Codice Fiscale</th>
+                            <th>Matricola</th>
+                            <th>Assunzione</th>
+                            <th>Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for dipendente in dipendenti %}
+                        <tr>
+                            <td class="fw-bold">{{ dipendente.cognome_nome }}</td>
+                            <td>{{ dipendente.codice_fiscale }}</td>
+                            <td>{{ dipendente.matricola|default:"-" }}</td>
+                            <td>{{ dipendente.data_assunzione|date:"d/m/Y"|default:"-" }}</td>
+                            <td>
+                                <a href="{% url 'modifica_dipendente' azienda.id dipendente.id %}"
+                                    class="btn btn-sm btn-primary">Modifica</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">Nessun dipendente trovato. Clicca su "+
+                                Nuovo Dipendente" per iniziare.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
